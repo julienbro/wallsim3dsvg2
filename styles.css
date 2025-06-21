@@ -973,6 +973,91 @@ body {
 }
 
 /* CORRECTION: Buttons Z+ et Z- côte à côte */
+.dpad-container {
+    background: #2d2d2d !important;
+    border: 1px solid #555 !important;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: fixed !important;
+    bottom: 80px !important;
+    left: 10% !important;
+    z-index: 1000 !important;
+    min-width: 150px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.dpad-title {
+    color: #e0e0e0;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 12px auto;
+}
+
+.dpad-btn {
+    background: #3e3e3e;
+    border: 1px solid #555;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    position: relative;
+}
+
+.dpad-btn:hover {
+    background: #0066ff;
+    border-color: #0066ff;
+    transform: scale(1.05);
+}
+
+.dpad-btn:active {
+    transform: scale(0.95);
+    background: #0052cc;
+}
+
+.dpad-up {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.dpad-left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.dpad-center {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.dpad-right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.dpad-down {
+    grid-column: 2;
+    grid-row: 3;
+}
+
 .dpad-vertical {
     display: flex;
     gap: 8px;
@@ -2010,11 +2095,6 @@ body {
 }
 
 /* Styles for Used Elements Panel */
-#used-elements-panel {
-    /* Assuming this is the main container for the used elements list */
-    /* Add padding or other panel-specific styles if needed */
-}
-
 .used-elements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -2492,6 +2572,7 @@ body {
 
 .slider-pedagogique {
     position: absolute;
+
     cursor: pointer;
     top: 0;
     left: 0;
