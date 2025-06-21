@@ -1,0 +1,22 @@
+{
+  "name": "wallsim3d",
+  "version": "0.0.1",
+  "description": "Application CAD 3D pour la simulation de murs",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 8080 -c-1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.150.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "vite": "^4.0.0"
+  },
+  "keywords": ["cad", "3d", "construction", "wall", "simulation"],
+  "author": "WallSim3D Team",
+  "license": "MIT"
+}

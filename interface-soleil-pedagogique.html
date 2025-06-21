@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface Soleil Pédagogique - Wallsim3D</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .sunlight-panel {
+            max-width: 400px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .panel-header h3 {
+            margin: 0;
+            color: #3498db;
+        }
+        
+        .panel-header .fas {
+            margin-right: 10px;
+            color: #f39c12;
+        }
+        
+        /* Diagramme solaire interactif */
+        .sun-diagram {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: radial-gradient(circle, #87ceeb 0%, #4682b4 70%, #2c3e50 100%);
+            border-radius: 50%;
+            border: 3px solid #34495e;
+            overflow: hidden;
+        }
+        
+        .horizon-line {
+            position: absolute;
+            bottom: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #2c3e50;
+            z-index: 2;
+        }
+        
+        .sun-position {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ffd700, #ff8c00);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #ffd700;
+            z-index: 3;
+            transition: all 0.3s ease;
+        }
+        
+        .cardinal-points {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .cardinal-point {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        .cardinal-point.north { top: 5px; left: 50%; transform: translateX(-50%); color: #e74c3c; }
+        .cardinal-point.south { bottom: 5px; left: 50%; transform: translateX(-50%); }
+        .cardinal-point.east { right: 5px; top: 50%; transform: translateY(-50%); }
+        .cardinal-point.west { left: 5px; top: 50%; transform: translateY(-50%); }
+        
+        /* Contrôles avec icônes */
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .control-group h4 {
+            margin: 0 0 10px 0;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+        }
+        
+        .control-group h4 .fas {
+            margin-right: 8px;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .control-row label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .control-row .fas {
+            margin-right: 6px;
+            color: #95a5a6;
+        }
+        
+        .range-container {
+            flex: 1;
+            margin-left: 15px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #34495e;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            background: #34495e;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #3498db;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        /* Informations contextuelles */
+        .sun-info {
+            background: rgba(52, 73, 94, 0.3);
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .sun-info h4 {
+            margin: 0 0 10px 0;
+            color: #f39c12;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sun-info .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .sun-info .info-row .label {
+            color: #bdc3c7;
+        }
+        
+        .sun-info .info-row .value {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        /* Presets saisonniers */
+        .season-presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .season-btn {
+            padding: 10px 15px;
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            color: #3498db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .season-btn .fas {
+            margin-right: 6px;
+        }
+        
+        .season-btn:hover {
+            background: rgba(52, 152, 219, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .season-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* Toggle switches */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #34495e;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #3498db;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Animation du soleil */
+        @keyframes sunGlow {
+            0%, 100% { 
+                box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; 
+            }
+            50% { 
+                box-shadow: 0 0 30px #ffd700, 0 0 40px #ff8c00; 
+            }
+        }
+        
+        .sun-position.animated {
+            animation: sunGlow 2s ease-in-out infinite;
+        }
+        
+        /* Légende pédagogique */
+        .pedagogy-box {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid #2ecc71;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .pedagogy-box h4 {
+            margin: 0 0 10px 0;
+            color: #2ecc71;
+            display: flex;
+            align-items: center;
+        }
+        
+        .pedagogy-box ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .pedagogy-box li {
+            margin-bottom: 5px;
+            color: #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="sunlight-panel">
+        <div class="panel-header">
+            <i class="fas fa-sun"></i>
+            <h3>Étude de l'Ensoleillement</h3>
+        </div>
+        
+        <!-- Diagramme solaire interactif -->
+        <div class="sun-diagram" id="sunDiagram">
+            <div class="horizon-line"></div>
+            <div class="sun-position animated" id="sunPosition"></div>
+            <div class="cardinal-points">
+                <div class="cardinal-point north">N</div>
+                <div class="cardinal-point south">S</div>
+                <div class="cardinal-point east">E</div>
+                <div class="cardinal-point west">O</div>
+            </div>
+        </div>
+        
+        <!-- Contrôles temporels -->
+        <div class="control-group">
+            <h4><i class="fas fa-calendar-alt"></i> Période</h4>
+            
+            <div class="control-row">
+                <label><i class="fas fa-calendar"></i> Mois</label>
+                <select id="sunMonth" style="background: #34495e; color: white; border: none; padding: 5px 10px; border-radius: 4px;">
+                    <option value="12">Décembre (Solstice d'hiver)</option>
+                    <option value="1">Janvier</option>
+                    <option value="2">Février</option>
+                    <option value="3">Mars (Équinoxe)</option>
+                    <option value="4">Avril</option>
+                    <option value="5">Mai</option>
+                    <option value="6" selected>Juin (Solstice d'été)</option>
+                    <option value="7">Juillet</option>
+                    <option value="8">Août</option>
+                    <option value="9">Septembre (Équinoxe)</option>
+                    <option value="10">Octobre</option>
+                    <option value="11">Novembre</option>
+                </select>
+            </div>
+            
+            <div class="control-row">
+                <label><i class="fas fa-clock"></i> Heure</label>
+                <div class="range-container">
+                    <input type="range" id="sunHour" min="6" max="18" value="12" step="0.5">
+                </div>
+                <div class="value-display" id="hourDisplay">12h00</div>
+            </div>
+            
+            <!-- Presets saisonniers -->
+            <div class="season-presets">
+                <button class="season-btn" data-month="12" data-hour="12">
+                    <i class="fas fa-snowflake"></i> Hiver
+                </button>
+                <button class="season-btn" data-month="6" data-hour="12">
+                    <i class="fas fa-sun"></i> Été
+                </button>
+                <button class="season-btn" data-month="3" data-hour="12">
+                    <i class="fas fa-seedling"></i> Printemps
+                </button>
+                <button class="season-btn" data-month="9" data-hour="12">
+                    <i class="fas fa-leaf"></i> Automne
+                </button>
+            </div>
+        </div>
+        
+        <!-- Contrôles d'affichage -->
+        <div class="control-group">
+            <h4><i class="fas fa-eye"></i> Affichage</h4>
+            
+            <div class="control-row">
+                <label><i class="fas fa-compass"></i> Indicateur Nord</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showNorthIndicator">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="control-row">
+                <label><i class="fas fa-sun"></i> Position solaire</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showSunHelper" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="control-row">
+                <label><i class="fas fa-shadow"></i> Ombres portées</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="enableShadows" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Orientation du Nord -->
+        <div class="control-group">
+            <h4><i class="fas fa-compass"></i> Orientation du Nord</h4>
+            
+            <div class="control-row">
+                <label><i class="fas fa-location-arrow"></i> Angle</label>
+                <div class="range-container">
+                    <input type="range" id="northAngle" min="0" max="359" value="0" step="1">
+                </div>
+                <div class="value-display" id="northAngleDisplay">0°</div>
+            </div>
+        </div>
+        
+        <!-- Informations solaires calculées -->
+        <div class="sun-info">
+            <h4><i class="fas fa-info-circle"></i> Données Solaires</h4>
+            <div class="info-row">
+                <span class="label">Azimut solaire:</span>
+                <span class="value" id="solarAzimuth">180°</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Élévation:</span>
+                <span class="value" id="solarElevation">60°</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Durée du jour:</span>
+                <span class="value" id="dayLength">15h30</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Lever/Coucher:</span>
+                <span class="value" id="sunriseSunset">5h15 - 20h45</span>
+            </div>
+        </div>
+        
+        <!-- Encadré pédagogique -->
+        <div class="pedagogy-box">
+            <h4><i class="fas fa-graduation-cap"></i> Comprendre l'Ensoleillement</h4>
+            <ul>
+                <li><strong>Azimut :</strong> Angle horizontal du soleil (0°=Nord, 90°=Est, 180°=Sud, 270°=Ouest)</li>
+                <li><strong>Élévation :</strong> Angle vertical du soleil par rapport à l'horizon</li>
+                <li><strong>Solstices :</strong> Juin (soleil le plus haut), Décembre (le plus bas)</li>
+                <li><strong>Équinoxes :</strong> Mars et Septembre (jour = nuit, 12h chacun)</li>
+                <li><strong>Façade Sud :</strong> La plus ensoleillée en hiver (chauffage passif)</li>
+                <li><strong>Protection Est/Ouest :</strong> Importante en été (surchauffe)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentMonth = 6;
+        let currentHour = 12;
+        let northAngle = 0;
+        
+        // Éléments DOM
+        const sunPosition = document.getElementById('sunPosition');
+        const sunDiagram = document.getElementById('sunDiagram');
+        const monthSelect = document.getElementById('sunMonth');
+        const hourSlider = document.getElementById('sunHour');
+        const hourDisplay = document.getElementById('hourDisplay');
+        const northAngleSlider = document.getElementById('northAngle');
+        const northAngleDisplay = document.getElementById('northAngleDisplay');
+        
+        // Éléments d'affichage des données
+        const solarAzimuthSpan = document.getElementById('solarAzimuth');
+        const solarElevationSpan = document.getElementById('solarElevation');
+        const dayLengthSpan = document.getElementById('dayLength');
+        const sunriseSunsetSpan = document.getElementById('sunriseSunset');
+        
+        // Calculs astronomiques simplifiés
+        function calculateSolarPosition(month, hour, latitude = 45.75) {
+            // Approximation pour la latitude de Lyon (45.75°N)
+            const dayOfYear = month * 30 - 15; // Approximation
+            const declination = 23.45 * Math.sin((360 * (284 + dayOfYear) / 365) * Math.PI / 180);
+            
+            const hourAngle = (hour - 12) * 15; // 15° par heure
+            const latRad = latitude * Math.PI / 180;
+            const declRad = declination * Math.PI / 180;
+            const hourRad = hourAngle * Math.PI / 180;
+            
+            // Élévation solaire
+            const elevation = Math.asin(
+                Math.sin(latRad) * Math.sin(declRad) + 
+                Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourRad)
+            ) * 180 / Math.PI;
+            
+            // Azimut solaire
+            let azimuth = Math.atan2(
+                Math.sin(hourRad),
+                Math.cos(hourRad) * Math.sin(latRad) - Math.tan(declRad) * Math.cos(latRad)
+            ) * 180 / Math.PI;
+            
+            azimuth = (azimuth + 180) % 360; // Ajuster pour avoir 0° = Nord
+            
+            return { azimuth, elevation, declination };
+        }
+        
+        function updateSunPosition() {
+            const solar = calculateSolarPosition(currentMonth, currentHour);
+            
+            // Convertir les coordonnées polaires en coordonnées cartésiennes pour le diagramme
+            const centerX = 100; // 50% du container
+            const centerY = 100; // 50% du container
+            const radius = 90; // 90% du rayon pour rester dans le cercle
+            
+            // Ajuster l'azimut avec l'orientation du Nord
+            const adjustedAzimuth = (solar.azimuth + northAngle) % 360;
+            const azimuthRad = (adjustedAzimuth - 90) * Math.PI / 180; // -90 pour que 0° soit en haut
+            
+            // Position dans le diagramme (élévation détermine la distance au centre)
+            const elevationFactor = Math.max(0, solar.elevation) / 90; // 0 à 1
+            const diagramRadius = radius * (1 - elevationFactor * 0.8); // Plus haut = plus près du centre
+            
+            const x = centerX + diagramRadius * Math.cos(azimuthRad);
+            const y = centerY + diagramRadius * Math.sin(azimuthRad);
+            
+            sunPosition.style.left = `${x}px`;
+            sunPosition.style.top = `${y}px`;
+            
+            // Si le soleil est sous l'horizon, le cacher
+            if (solar.elevation < 0) {
+                sunPosition.style.opacity = '0.3';
+                sunPosition.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            } else {
+                sunPosition.style.opacity = '1';
+                sunPosition.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+            
+            // Mettre à jour les informations
+            solarAzimuthSpan.textContent = `${Math.round(solar.azimuth)}°`;
+            solarElevationSpan.textContent = `${Math.round(solar.elevation)}°`;
+            
+            // Calculer la durée du jour (approximation)
+            const dayLength = calculateDayLength(currentMonth);
+            dayLengthSpan.textContent = dayLength;
+            
+            // Calculer les heures de lever/coucher
+            const { sunrise, sunset } = calculateSunriseSunset(currentMonth);
+            sunriseSunsetSpan.textContent = `${sunrise} - ${sunset}`;
+        }
+        
+        function calculateDayLength(month) {
+            // Approximation de la durée du jour selon le mois
+            const dayLengths = {
+                1: "9h15", 2: "10h30", 3: "12h00", 4: "13h30", 5: "15h00", 6: "15h30",
+                7: "15h15", 8: "14h00", 9: "12h30", 10: "11h00", 11: "9h45", 12: "8h45"
+            };
+            return dayLengths[month] || "12h00";
+        }
+        
+        function calculateSunriseSunset(month) {
+            // Approximation des heures de lever/coucher
+            const times = {
+                1: { sunrise: "8h15", sunset: "17h30" },
+                2: { sunrise: "7h45", sunset: "18h15" },
+                3: { sunrise: "7h00", sunset: "19h00" },
+                4: { sunrise: "6h15", sunset: "19h45" },
+                5: { sunrise: "5h45", sunset: "20h30" },
+                6: { sunrise: "5h30", sunset: "21h00" },
+                7: { sunrise: "5h45", sunset: "20h45" },
+                8: { sunrise: "6h15", sunset: "20h15" },
+                9: { sunrise: "7h00", sunset: "19h30" },
+                10: { sunrise: "7h45", sunset: "18h45" },
+                11: { sunrise: "8h30", sunset: "17h15" },
+                12: { sunrise: "8h45", sunset: "17h00" }
+            };
+            return times[month] || { sunrise: "6h00", sunset: "18h00" };
+        }
+        
+        function formatHour(hour) {
+            const h = Math.floor(hour);
+            const m = Math.round((hour - h) * 60);
+            return `${h}h${m.toString().padStart(2, '0')}`;
+        }
+        
+        // Event listeners
+        monthSelect.addEventListener('change', (e) => {
+            currentMonth = parseInt(e.target.value);
+            updateSunPosition();
+        });
+        
+        hourSlider.addEventListener('input', (e) => {
+            currentHour = parseFloat(e.target.value);
+            hourDisplay.textContent = formatHour(currentHour);
+            updateSunPosition();
+        });
+        
+        northAngleSlider.addEventListener('input', (e) => {
+            northAngle = parseInt(e.target.value);
+            northAngleDisplay.textContent = `${northAngle}°`;
+            updateSunPosition();
+        });
+        
+        // Presets saisonniers
+        document.querySelectorAll('.season-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const month = parseInt(btn.dataset.month);
+                const hour = parseFloat(btn.dataset.hour);
+                
+                currentMonth = month;
+                currentHour = hour;
+                
+                monthSelect.value = month;
+                hourSlider.value = hour;
+                hourDisplay.textContent = formatHour(hour);
+                
+                // Mettre à jour les styles des boutons
+                document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                updateSunPosition();
+            });
+        });
+        
+        // Initialisation
+        updateSunPosition();
+        
+        console.log('Interface soleil pédagogique chargée');
+    </script>
+</body>
+</html>

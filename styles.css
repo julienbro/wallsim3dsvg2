@@ -1,0 +1,2783 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Barre de menu */
+.menubar {
+    background-color: #2d2d2d;
+    display: flex;
+    align-items: center; /* Ensures menu items are vertically centered */
+    border-bottom: 1px solid #3e3e3e;
+    position: relative; /* Establishes a positioning context for the absolute positioned logo */
+    height: 40px; /* Define a specific height for the menubar */
+}
+
+.menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    position: relative;
+}
+
+.menu-item:hover {
+    background-color: #3e3e3e;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #2d2d2d;
+    min-width: 160px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    top: 100%;
+    left: 0;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: #e0e0e0;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #3e3e3e;
+}
+
+/* Styles for the centered logo */
+.menu-logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Centers the logo */
+    z-index: 10; /* Ensures logo is above menu items, but below dropdowns (which have z-index: 1000) */
+    pointer-events: none; /* Allows clicks to pass through the logo's container */
+}
+
+.menu-logo img {
+    display: block;
+    height: 30px; /* Adjust based on your logo's aspect ratio and desired size within the 40px menubar */
+    width: auto;
+    pointer-events: auto; /* Makes the image itself clickable if it were a link */
+}
+
+/* Barre d'outils */
+.toolbar {
+    background-color: #2d2d2d;
+    padding: 12px 8px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #3e3e3e;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: auto;
+    max-height: none;
+    min-height: 80px;
+}
+
+.toolbar-group {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 32px;
+    background-color: #3e3e3e;
+    margin: 0 8px;
+}
+
+/* Boutons de la barre d'outils - style carré avec texte */
+.toolbar-btn {
+    background-color: #3a3a3a;
+    border: 2px solid #4a4a4a;
+    color: #e0e0e0;
+    padding: 8px 6px; /* Taille intermédiaire */
+    cursor: pointer;
+    border-radius: 7px; /* Taille intermédiaire */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 16px; /* Taille intermédiaire */
+    width: 60px; /* Taille intermédiaire */
+    height: 60px; /* Taille intermédiaire */
+    position: relative;
+    flex-shrink: 0;
+    gap: 3px; /* Taille intermédiaire */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-btn:hover {
+    background-color: #0066ff;
+    border-color: #0088ff;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
+}
+
+.toolbar-btn:active {
+    transform: translateY(0);
+    background-color: #0052cc;
+    box-shadow: 0 2px 6px rgba(0, 102, 255, 0.3);
+}
+
+.toolbar-btn.active {
+    background-color: #0066ff;
+    border-color: #0088ff;
+    color: #ffffff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Texte des boutons toolbar */
+.toolbar-btn-text {
+    font-size: 9px; /* Remettre à une taille lisible */
+    font-weight: 600;
+    text-align: center;
+    line-height: 1;
+    margin-top: 2px; /* Remettre un espacement correct */
+}
+
+/* Icônes des boutons toolbar */
+.toolbar-btn i {
+    font-size: 18px; /* Taille intermédiaire pour les icônes */
+}
+
+/* Images dans les boutons toolbar */
+.toolbar-btn .view-icon-img {
+    width: 22px; /* Taille intermédiaire pour les images d'icônes */
+    height: 22px;
+    display: block;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.toolbar-btn:hover .view-icon-img {
+    filter: brightness(0) invert(1);
+}
+
+/* Suppression des anciens tooltips */
+.toolbar-btn[title]::after {
+    display: none;
+}
+
+/* Zone principale */
+.main-area {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Barres latérales */
+/* Barre latérale gauche */
+.sidebar {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 70px; /* Réduire encore la largeur de la sidebar gauche */
+    height: 60vh;
+    background-color: #2a2a2a;
+    overflow-y: auto;
+    z-index: 100;
+    border-radius: 0 8px 8px 0;
+    border: 1px solid #3e3e3e;
+}
+
+.left-sidebar {
+    border-right: 1px solid #3e3e3e;
+}
+
+.right-sidebar {
+    position: absolute;
+    right: 0;
+    top: 10%; /* Changed from 50px */
+    bottom: 30%; /* Changed from 0 */
+    width: 420px;
+    background-color: #2a2a2a;
+    border-left: 1px solid #3e3e3e;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 100;
+}
+
+.right-sidebar.collapsed {
+    transform: translateX(260px);
+}
+
+.panel {
+    padding: 16px;
+    border-bottom: 1px solid #3e3e3e;
+}
+
+.panel h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #0078d4;
+}
+
+/* Onglets de la barre latérale */
+.sidebar-tabs {
+    display: flex;
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #3e3e3e;
+}
+
+.sidebar-tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    transition: all 0.2s;
+}
+
+.sidebar-tab:hover {
+    background-color: #2a2a2a;
+    color: #ccc;
+}
+
+.sidebar-tab.active {
+    background-color: #2a2a2a;
+    color: #fff;
+    border-bottom: 2px solid #0066ff;
+}
+
+.sidebar-tab i {
+    font-size: 16px;
+}
+
+/* Panneaux de la barre latérale */
+.sidebar-panels {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+}
+
+.sidebar-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    flex-direction: column;
+}
+
+.sidebar-panel.active {
+    display: flex;
+}
+
+/* Bouton de réduction des panneaux */
+.panel-toggle {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.3s;
+}
+
+.panel-toggle:hover {
+    color: #fff;
+}
+
+.right-sidebar.collapsed .panel-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Ajustement du viewport quand la sidebar est visible */
+#viewport {
+    left: 65px; /* Ajuster selon la nouvelle largeur */
+    top: 100px;
+    right: 350px;
+    bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+#viewport.sidebar-collapsed {
+    right: 40px;
+}
+
+/* Calques */
+.layer-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 4px;
+    background-color: #1e1e1e;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.layer-item:hover {
+    background-color: #2d2d2d;
+}
+
+.layer-item.active {
+    background-color: #0078d4;
+}
+
+.layer-item input {
+    margin-right: 8px;
+}
+
+.layer-item i {
+    margin-left: auto;
+    color: #ccc; /* Couleur par défaut pour les icônes */
+    transition: color 0.2s ease-in-out;
+}
+
+.layer-item i:hover {
+    color: #fff; /* Couleur au survol */
+}
+
+/* Zone de visualisation */
+.viewport-container {
+    flex: 1;
+    position: relative;
+    background-color: #121212; /* Fond légèrement plus clair pour un meilleur contraste */
+    overflow: hidden; /* Empêche le débordement du canvas */
+}
+
+#viewport {
+    width: 100%;
+    height: 100%;
+    display: flex; /* Permet de centrer le canvas si nécessaire */
+    justify-content: center;
+    align-items: center;
+}
+
+#viewport canvas {
+    display: block;
+    max-width: 100%; /* S'assure que le canvas ne dépasse pas son conteneur */
+    max-height: 100%;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    /* Accélération matérielle pour les transitions d'ombres */
+    will-change: transform, filter; /* filter peut être coûteux, utiliser avec parcimonie */
+    transform: translateZ(0); /* Force l'accélération matérielle */
+    outline: none; /* Supprime le contour bleu potentiel au focus */
+}
+
+/* Indicateur d'axes */
+.axis-indicator {
+    position: absolute;
+    bottom: 80px; /* Ajusté pour laisser de la place à la barre d'état */
+    right: 20px;
+    background-color: rgba(45, 45, 45, 0.8);
+    border: 1px solid #3e3e3e;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+/* Indicateur d'accrochage */
+.snap-hint {
+    position: absolute;
+    background-color: rgba(0, 255, 0, 0.2);
+    border: 2px solid #00ff00;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+}
+
+/* Barre d'état dans la barre d'outils */
+.status-bar {
+    position: absolute;
+    bottom: 30px; /* Décalé pour éviter la superposition avec #status-bar */
+    left: 0;
+    right: 0;
+    background-color: #1e1e1e; /* Un peu plus clair que #2d2d2d pour se démarquer */
+    padding: 8px 16px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    border-top: 1px solid #3e3e3e;
+    font-family: 'Consolas', monospace;
+    z-index: 999; /* Inférieur à #status-bar */
+}
+
+.status-bar .btn-small {
+    margin-top: 0;
+    margin-left: 8px;
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+.status-bar .btn-small:first-of-type {
+    margin-left: 0;
+}
+
+.status-bar span {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+#coordinates {    min-width: 400px;
+    font-weight: 500;
+}
+
+/* Barre de statut */
+#status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #1e1e1e;
+    border-top: 1px solid #3e3e3e;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 1000;
+}
+
+#command-output {
+    font-size: 12px;
+    color: #0078d4;
+    font-weight: 500;
+    user-select: none;
+}
+
+/* Boutons */
+.btn-small {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.btn-small:hover {
+    background-color: #106ebe;
+}
+
+/* Propriétés */
+.info-text {
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3e3e3e;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5a5a5a;
+}
+
+/* Info-bulle pour le dessin */
+.drawing-tooltip {
+    position: fixed;
+    background-color: rgba(45, 45, 45, 0.95);
+    color: #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #3e3e3e;
+    font-size: 12px;
+    font-family: 'Consolas', monospace;
+    pointer-events: none;
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.drawing-tooltip span {
+    font-weight: bold;
+}
+
+/* Menu contextuel pour polyligne */
+.polyline-context-menu {
+    position: fixed;
+    background-color: #2a2a2a;
+    border: 1px solid #3e3e3e;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 180px;
+    padding: 4px 0;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    color: #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    border-bottom: 1px solid #3e3e3e;
+}
+
+.context-menu-item:last-child {
+    border-bottom: none;
+}
+
+.context-menu-item:hover {
+    background-color: #3e3e3e;
+}
+
+.context-menu-item i {
+    width: 16px;
+    text-align: center;
+}
+
+#close-polyline i {
+    color: #4CAF50;
+}
+
+#finish-polyline i {
+    color: #2196F3;
+}
+
+#cancel-polyline i {
+    color: #f44336;
+}
+
+/* Animation de pulsation pour la sélection */
+@keyframes pulse-selection {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.selected-indicator {
+    animation: pulse-selection 1.5s ease-in-out infinite;
+}
+
+/* Styles pour les propriétés dans la barre latérale */
+.properties-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.property-group {
+    border: 1px solid #3e3e3e;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: #1e1e1e;
+}
+
+.property-group h4 {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #e0e0e0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Propriétés - Ajustement de la largeur */
+.property-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+    max-width: 300px; /* Réduction de la largeur */
+}
+
+.property-item label {
+    flex: 0 0 100px;
+    font-size: 11px;
+    color: #b0b0b0;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.property-item input,
+.property-item select {
+    flex: 1;
+    box-sizing: border-box;
+    background-color: #252525;
+    border: 1px solid #3e3e3e;
+    color: #e0e0e0;
+    padding: 4px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    height: 24px;
+}
+
+/* Styles pour le panneau calques dans la sidebar droite */
+#layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background-color: #1e1e1e;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.layer-item:hover {
+    background-color: #2e2e2e;
+}
+
+.layer-item.active {
+    background-color: #0066ff;
+}
+
+.layer-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.layer-item span {
+    flex: 1;
+    font-size: 13px;
+}
+
+.layer-item button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 12px;
+}
+
+.layer-item button:hover {
+    color: #ff4444;
+}
+
+/* Bouton nouveau calque */
+.btn {
+    background-color: #0066ff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn:hover {
+    background-color: #0052cc;
+}
+
+.btn i {
+    font-size: 12px;
+}
+
+/* Conteneur de groupe d'outils avec label vertical */
+.tool-group-container {
+    display: flex;
+    align-items: stretch;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+/* Label vertical pour les groupes d'outils */
+.tool-group-label {
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+    position: relative;
+    background-color: #1e1e1e;
+    border-radius: 2px;
+}
+
+.tool-group-label span {
+    position: absolute;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    white-space: nowrap;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    font-weight: 600;
+    padding: 2px 0;
+}
+
+/* Ajustement du groupe d'outils */
+.tool-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 0;
+    flex: 1;
+}
+
+.tool-group h4 {
+    display: none; /* Cacher les anciens titres */
+}
+
+/* Style des boutons dans la sidebar */
+.sidebar .toolbar-btn {
+    width: 100px;
+    height: 35px;
+    margin: 0 auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 5px 8px;
+    gap: 8px;
+}
+
+.sidebar .toolbar-btn span {
+    font-size: 10px;
+    display: block;
+}
+
+.sidebar .toolbar-btn i {
+    font-size: 14px;
+    min-width: 16px;
+}
+
+/* Ajustement de la barre latérale */
+.sidebar {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 70px; /* Réduire encore la largeur de la sidebar gauche */
+    height: 60vh;
+    background-color: #2a2a2a;
+    overflow-y: auto;
+    z-index: 100;
+    border-radius: 0 8px 8px 0;
+    border: 1px solid #3e3e3e;
+}
+
+/* Ajustement du viewport */
+#viewport {
+    left: 75px; /* Ajuster selon la nouvelle largeur de sidebar (70px + 5px de marge) */
+    top: 100px;
+    right: 350px;
+    bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+#viewport.sidebar-collapsed {
+    right: 40px;
+}
+
+/* Boutons de la barre latérale - même style que la toolbar */
+.tool-btn {
+    width: 40px;
+    height: 40px;
+    background-color: transparent; /* Fond transparent comme la toolbar */
+    border: 1px solid transparent;
+    color: #e0e0e0;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    margin: 0 auto;
+    position: relative; /* Important pour le positionnement des tooltips */
+}
+
+.tool-btn:hover {
+    background-color: #0066ff;
+    border-color: #0066ff;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
+}
+
+.tool-btn:active {
+    transform: translateY(0);
+    background-color: #0052cc;
+}
+
+.tool-btn.active {
+    background-color: #0066ff;
+    border-color: #0066ff;
+    color: #ffffff;
+}
+
+/* Tooltips pour la barre latérale */
+.tool-btn::after {
+    content: attr(title);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 10px;
+    background-color: rgba(45, 45, 45, 0.95);
+    color: #e0e0e0;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #3e3e3e;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Afficher tous les tooltips lors du survol de la sidebar */
+.sidebar:hover .tool-btn::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(5px);
+}
+
+/* Style spécial pour le tooltip du bouton survolé */
+.tool-btn:hover::after {
+    background-color: #0066ff;
+    border-color: #0066ff;
+    font-weight: bold;
+    transform: translateY(-50%) translateX(10px) scale(1.05);
+}
+
+/* Ajustement pour éviter que les tooltips se chevauchent avec d'autres éléments */
+.sidebar {
+    overflow: visible; /* Permettre aux tooltips de s'afficher en dehors de la sidebar */
+}
+
+/* Menu contextuel pour les objets de la scène */
+.object-context-menu {
+    position: absolute;
+    background-color: rgba(45, 45, 45, 0.95);
+    border: 1px solid #555;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 4px 0;
+    min-width: 150px;
+    z-index: 10000;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.object-context-menu .context-menu-item {
+    padding: 8px 16px;
+    color: #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.object-context-menu .context-menu-item:hover {
+    background-color: #0066ff;
+    color: #ffffff;
+}
+
+.object-context-menu .context-menu-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.object-context-menu .context-menu-separator {
+    height: 1px;
+    background-color: #555;
+    margin: 4px 8px;
+}
+
+.object-context-menu .context-menu-item:disabled,
+.object-context-menu .context-menu-item[style*="opacity: 0.5"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.object-context-menu .context-menu-item:disabled:hover,
+.object-context-menu .context-menu-item[style*="opacity: 0.5"]:hover {
+    background-color: transparent;
+    color: #e0e0e0;
+}
+
+/* Animation d'apparition du menu */
+.object-context-menu {
+    animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* CORRECTION: Buttons Z+ et Z- côte à côte */
+.dpad-vertical {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+.dpad-z-up, .dpad-z-down {
+    position: relative; /* Enlever position absolute */
+    padding: 8px 12px;
+    font-size: 11px;
+    gap: 4px;
+    min-width: 50px;
+    height: 32px;
+    background: #3e3e3e;
+    border: 1px solid #555;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dpad-z-up:hover, .dpad-z-down:hover {
+    background: #0066ff;
+    border-color: #0066ff;
+    transform: scale(1.05);
+}
+
+.dpad-z-up:active, .dpad-z-down:active {
+    transform: scale(0.95);
+    background: #0052cc;
+}
+
+.dpad-step {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    font-size: 12px;
+    justify-content: center;
+}
+
+.dpad-step input {
+    width: 50px;
+    padding: 4px;
+    background: #3e3e3e;
+    border: 1px solid #555;
+    color: #e0e0e0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.dpad-step label, .dpad-step span {
+    color: #e0e0e0;
+}
+
+/* Écran de chargement (Splash Screen) */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a0a;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-out;
+}
+
+.splash-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.splash-content {
+    width: 453px;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 
+                0 0 100px rgba(0, 102, 255, 0.2);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.splash-logo {
+    width: 100%;
+    height: 453px;
+    position: relative;
+    z-index: 1;
+}
+
+.splash-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+}
+
+.splash-info {
+    position: relative;
+    z-index: 2;
+    padding: 20px 40px 30px 40px;
+    background-color: #1a1a1a;
+    border-top: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+}
+
+.splash-version {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* Bouton démarrer */
+.start-button {
+    background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.start-button:hover {
+    background: linear-gradient(135deg, #0052cc 0%, #004acc 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.4);
+}
+
+.start-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(0, 102, 255, 0.3);
+}
+
+.start-button i {
+    font-size: 14px;
+}
+
+.start-button.hidden {
+    display: none;
+}
+
+/* Section de chargement */
+.loading-section {
+    width: 100%;
+    animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-bar {
+    width: 100%;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.loading-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, 
+        #0066ff 0%, 
+        #00aaff 50%, 
+        #0066ff 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    animation: loading-shimmer 2s linear infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+.loading-text {
+    margin: 0;
+    font-size: 12px;
+    color: #aaaaaa;
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    min-height: 16px;
+    animation: loading-pulse 1s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Animation d'entrée */
+@keyframes splash-intro {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.splash-content {
+    animation: splash-intro 0.5s ease-out;
+}
+
+.menubar > div[style*="margin-left:auto"] .toolbar-btn {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    margin: 0 2px;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menubar > div[style*="margin-left:auto"] .toolbar-btn:hover {
+    background: #0066ff;
+    color: #fff;
+}
+
+/* Pour éviter que les tooltips soient coupés */
+.toolbar {
+    overflow: visible;
+}
+
+/* Fallback pour les icônes FontAwesome manquantes - Version simplifiée */
+.toolbar-btn[id="toolbar-new"]::before {
+    display: none;
+}
+
+.toolbar-btn[id="toolbar-open"]::before {
+    display: none;
+}
+
+.toolbar-btn[id="toolbar-save"]::before {
+    display: none;
+}
+
+.toolbar-btn[id="toolbar-print"]::before {
+    display: none;
+}
+
+.toolbar-btn[id="toolbar-undo"]::before {
+    display: none;
+}
+
+.toolbar-btn[id="toolbar-redo"]::before {
+    display: none;
+}
+
+/* Afficher les icônes FontAwesome pour tous les boutons */
+.toolbar-btn[id="toolbar-new"] i,
+.toolbar-btn[id="toolbar-open"] i,
+.toolbar-btn[id="toolbar-save"] i,
+.toolbar-btn[id="toolbar-print"] i,
+.toolbar-btn[id="toolbar-undo"] i,
+.toolbar-btn[id="toolbar-redo"] i {
+    display: inline-block !important;
+    font-size: 20px !important;
+    color: #e0e0e0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Style spécifique pour le bouton nouveau */
+#toolbar-new i.fas.fa-file-plus {
+    display: inline-block !important;
+    font-size: 20px !important;
+    color: #e0e0e0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* SUPPRESSION DES TOOLTIP TOOLBAR */
+/*
+.toolbar-btn[data-tooltip]:hover::after,
+.toolbar-btn[data-tooltip]:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%) translateY(8px);
+    background: #0066ff;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid #0066ff;
+    font-size: 12px;
+    white-space: nowrap;
+    font-weight: bold;
+    opacity: 1;
+    z-index: 2000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.toolbar-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%) translateY(8px);
+    background: #0066ff;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid #0066ff;
+    font-size: 12px;
+    white-space: nowrap;
+    font-weight: bold;
+    opacity: 0;
+    z-index: 2000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: opacity 0.2s, transform 0.2s;
+}
+*/
+
+/* SUPPRESSION DES TOOLTIP VERTICAUX MENUBAR */
+/*
+.menubar .toolbar-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px) rotate(-90deg);
+    transform-origin: center;
+    background: #0066ff;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid #0066ff;
+    font-size: 12px;
+    white-space: nowrap;
+    font-weight: bold;
+    opacity: 0;
+    z-index: 2000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.menubar .toolbar-btn:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(20px) rotate(-90deg) scale(1.05);
+}
+*/
+
+.snap-guide {
+    position: absolute;
+    background-color: rgba(0, 255, 0, 0.2);
+    border: 1px dashed #00ff00;
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* Styles pour les formulaires de données du projet */
+.data-section {
+    padding: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.data-input,
+.data-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #252525;
+    border: 1px solid #3e3e3e;
+    color: #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+}
+
+.data-textarea {
+    resize: vertical;
+    line-height: 1.4;
+}
+
+.data-input:focus,
+.data-textarea:focus {
+    outline: none;
+    border-color: #0078d4;
+    box-shadow: 0 0 4px rgba(0, 102, 255, 0.3);
+}
+
+/* Styles spécifiques pour les grandes zones de texte dans l'onglet données */
+#project-procedure {
+    min-height: 400px;
+    max-height: 500px;
+    font-family: 'Consolas', monospace;
+    white-space: pre-wrap;
+    font-size: 11px;
+}
+
+#project-notes {
+    min-height: 80px;
+    max-height: 120px;
+    font-size: 11px;
+}
+
+.form-actions {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #0066ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #0052cc;
+}
+
+/* Styles pour l'interface de cotation */
+.dimension-ui-panel {
+    position: absolute !important;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    z-index: 10000 !important;
+    font-family: Arial, sans-serif;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.dimension-ui-panel h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.dimension-ui-panel label {
+    display: block;
+    margin-bottom: 4px;
+    color: #666;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.dimension-ui-panel select,
+.dimension-ui-panel input[type="number"],
+.dimension-ui-panel input[type="color"] {
+    width: 100%;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.dimension-ui-panel select:focus,
+.dimension-ui-panel input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* Style pour le panneau de cotation en mode édition */
+.dimension-ui-panel {
+    transition: all 0.2s ease;
+}
+
+.dimension-ui-panel #dimension-edit-controls {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Boutons d'édition avec effet hover */
+#apply-dimension-changes:hover {
+    background: #0056b3 !important;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+#cancel-dimension-edit:hover {
+    background: #555 !important;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+/* Style pour les options de cotation */
+.scale-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.scale-option:hover {
+    background: rgba(0, 102, 255, 0.1);
+}
+
+.scale-option.active {
+    background-color: #0066ff;
+    color: white;
+    font-weight: bold;
+}
+
+.scale-option.active::before {
+    content: '✓ ';
+    margin-right: 5px;
+}
+
+/* Affichage de l'échelle actuelle */
+#current-scale-display {
+    cursor: pointer;
+    color: #0078d4;
+    text-decoration: underline dotted #888;
+    transition: color 0.2s;
+}
+
+#current-scale-display:hover {
+    color: #0056d3;
+}
+
+/* Nouveau style pour le panneau de propriétés de cotation */
+#dimension-properties-panel {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 8px;
+    color: #222;
+    font-size: 13px;
+}
+
+#dimension-properties-panel label {
+    font-size: 12px;
+    color: #333;
+}
+
+#dimension-properties-panel input,
+#dimension-properties-panel select {
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+#dimension-properties-panel button {
+    margin-top: 6px;
+}
+
+#dimension-properties-btn {
+    margin-bottom: 8px;
+}
+
+/* Styles pour les notifications d'import */
+.import-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 10000;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.import-notification.error {
+    background: #f44336;
+}
+
+.import-notification.warning {
+    background: #ff9800;
+}
+
+.import-notification .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Amélioration du menu dropdown pour l'import */
+.dropdown-content a[href="#import-collada"] {
+    position: relative;
+}
+
+.dropdown-content a[href="#import-collada"]:before {
+    content: "📁";
+    margin-right: 8px;
+}
+
+/* Style pour les objets importés */
+.imported-object {
+    border: 2px solid #2196F3 !important;
+}
+
+/* Styles pour le panneau de propri�tés */
+.prop-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prop-label {
+    font-weight: 600;
+    color: #ccc;
+    min-width: 80px;
+    font-size: 12px;
+}
+
+.prop-value {
+    color: #fff;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.prop-value input[type="number"], .prop-value input[type="text"] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    color: #fff;
+    padding: 2px 4px;
+    font-size: 11px;
+    width: 80px;
+}
+
+.prop-value input[type="text"] {
+    width: 120px;
+}
+
+.prop-value input[type="number"]:focus, .prop-value input[type="text"]:focus {
+    outline: none;
+    border-color: #0078d4;
+    background: rgba(0, 120, 212, 0.1);
+}
+
+#properties-content {
+    padding: 8px;
+}
+
+#properties-content p {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Séparateur pour les outils */
+.tool-separator {
+    width: 100%;
+    height: 1px;
+    background-color: #444;
+    margin: 8px 0;
+    flex-shrink: 0;
+}
+
+/* Information du calque */
+.layer-info {
+    padding: 8px 12px;
+    margin: 4px 0;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.layer-info .layer-name {
+    font-size: 11px;
+    color: #ccc;
+    font-weight: 500;
+       text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Palette de couleurs */
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+    gap: 8px;
+    padding: 8px 0;
+    justify-items: center;
+    align-items: center;
+}
+
+.color-item {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 2px solid #444;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: border 0.2s, box-shadow 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.color-item.selected {
+    border: 2.5px solid #0078d4;
+    box-shadow: 0 0 0 2px #0078d4, 0 2px 8px rgba(0,120,212,0.15);
+    transform: scale(1.08);
+    z-index: 2;
+}
+
+.color-item:hover {
+    border: 2.5px solid #fff;
+    box-shadow: 0 0 0 2px #fff, 0 2px 8px rgba(255,255,255,0.10);
+    transform: scale(1.06);
+    z-index: 2;
+}
+
+/* Pour la section couleur personnalisée */
+.custom-color-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+#custom-color-picker {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+#apply-custom-color {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #0078d4;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#apply-custom-color:hover {
+    background: #005fa3;
+}
+
+/* Textures - Nouvelle section */
+.texture-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 8px 0;
+    justify-items: center;
+    align-items: center;
+}
+
+.texture-item {
+    width: 160px;
+    height: 160px;
+    border-radius: 18px;
+    border: 3px solid #444;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.20);
+    cursor: pointer;
+    transition: border 0.2s, box-shadow 0.2s, transform 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.texture-item.selected {
+    border: 2.5px solid #0078d4;
+    box-shadow: 0 0 0 2px #0078d4, 0 2px 8px rgba(0,120,212,0.15);
+    transform: scale(1.08);
+    z-index: 2;
+}
+
+.texture-item:hover {
+    border: 2.5px solid #fff;
+    box-shadow: 0 0 0 2px #fff, 0 2px 8px rgba(255,255,255,0.10);
+    transform: scale(1.06);
+    z-index: 2;
+}
+
+.texture-label {
+    font-size: 18px;
+    padding: 8px 0 10px 0;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    background: rgba(30,30,30,0.85);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    text-align: center;
+    padding: 3px 0 5px 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+/* Message de catégorie vide */
+.empty-category-message {
+    display: flex;    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 200px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* Styles for Elements Library Grid */
+.elements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    padding: 15px;
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+}
+
+.element-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    min-height: 160px;
+}
+
+.element-item:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.element-item.selected {
+    border-color: #007acc !important;
+    background-color: #e7f3ff;
+    box-shadow: 0 2px 8px rgba(0,122,204,0.3) !important;
+}
+
+.element-preview {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgb(64, 64, 64);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.element-preview canvas {
+    width: 180% !important;
+    height: 190% !important;
+    border-radius: 4px;
+}
+
+.element-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+}
+
+.element-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-bottom: 2px;
+    line-height: 1.2;
+    max-height: 24px;
+    overflow: hidden;
+}
+
+.element-description {
+    font-size: 9px;
+    color: #666;
+    margin-bottom: 4px;
+    line-height: 1.2;
+    max-height: 20px;
+    overflow: hidden;
+}
+
+.element-dims {
+    font-size: 10px;
+    color: #888;
+    font-weight: 500;
+}
+
+.elements-library-content {
+    padding: 10px 0;
+}
+
+.element-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.category-tab {
+    padding: 6px 12px;
+    background: rgb(64, 64, 64);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.category-tab:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.category-tab.active {
+    background: #007acc;
+    color: white;
+}
+
+/* Styles for Used Elements Panel */
+#used-elements-panel {
+    /* Assuming this is the main container for the used elements list */
+    /* Add padding or other panel-specific styles if needed */
+}
+
+.used-elements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 10px; /* Add some padding around the grid */
+}
+
+.used-category-header {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    font-weight: bold;
+    color: #00aaff; /* Wallsim blue */
+    margin-top: 15px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #444;
+}
+
+.used-category-header:first-child {
+    margin-top: 5px;
+}
+
+.used-element-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background-color: #3a3a3a;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    text-align: center;
+    position: relative;
+    min-height: 110px; /* Adjusted for content */
+    box-sizing: border-box;
+    justify-content: flex-start; /* Align items to the top */
+}
+
+.used-element-item:hover {
+    background-color: #4a4a4a;
+    transform: translateY(-2px);
+}
+
+.element-preview-container {
+    width: 60px;
+    height: 50px;
+    margin-bottom: 8px; /* Increased space */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2c2c2c;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #222; /* Subtle border for preview area */
+}
+
+.element-preview-container canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Ensures GLB scales down correctly */
+    display: block;
+}
+
+.element-info {
+    font-size: 11px;
+    color: #ccc;
+    line-height: 1.3;
+    width: 100%;
+}
+
+.element-name-preview {
+    font-weight: bold;
+    margin-bottom: 3px; /* Slightly more space */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    color: #FFFFFF; /* Pure white name */
+}
+
+.element-dimensions-preview {
+    font-size: 10px;
+    color: #aaa;
+}
+
+.element-count-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #e67e22; /* Orange badge */
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.no-elements {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    padding: 20px 0;
+}
+
+/* Styles for the 3D CSS cube preview (fallback) */
+.element-3d-wrapper {
+    width: 50px;
+    height: 50px;
+    perspective: 600px; /* Adjusted perspective */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.element-3d-cube {
+    width: var(--cube-width, 20px);
+    height: var(--cube-height, 20px);
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(-25deg) rotateY(-35deg); /* Adjusted view angle */
+    transition: transform 0.3s ease;
+}
+
+.element-preview-container:hover .element-3d-cube {
+    /* Apply hover to container to affect cube if CSS cube is direct child */
+    transform: rotateX(-20deg) rotateY(-30deg) scale(1.1);
+}
+
+.cube-face {
+    position: absolute;
+    border: 1px solid rgba(0,0,0,0.4); /* Darker border */
+    box-sizing: border-box;
+    opacity: 0.9; /* Slight transparency */
+}
+
+.front  { background-color: var(--main-bg, #777); transform: translateZ(calc(var(--cube-depth) / 2)); width: var(--cube-width); height: var(--cube-height); }
+.back   { background-color: var(--main-bg, #777); transform: rotateY(180deg) translateZ(calc(var(--cube-depth) / 2)); width: var(--cube-width); height: var(--cube-height); }
+.right  { background-color: var(--side-bg, #555); transform: rotateY(90deg) translateZ(calc(var(--cube-width) / 2)); width: var(--cube-depth); height: var(--cube-height); }
+.left   { background-color: var(--side-bg, #555); transform: rotateY(-90deg) translateZ(calc(var(--cube-width) / 2)); width: var(--cube-depth); height: var(--cube-height); }
+.top    { background-color: var(--top-bg, #999); transform: rotateX(90deg) translateZ(calc(var(--cube-height) / 2)); width: var(--cube-width); height: var(--cube-depth); }
+.bottom { background-color: var(--main-bg, #777); transform: rotateX(-90deg) translateZ(calc(var(--cube-height) / 2)); width: var(--cube-width); height: var(--cube-depth); }
+
+/* Error state for used elements (if needed) */
+.used-element-item-error {
+    /* Styles for items that couldn't load, if you implement specific error display */
+    border: 1px dashed #ff6060;
+    background-color: #4a2a2a;
+}
+
+.used-element-item-error .element-preview-container::before {
+    content: "ERR";
+    font-size: 14px;
+    color: #ff8080;
+    font-weight: bold;
+}
+
+/* Styles pour les options de coupe dans le panneau d'options d'élément */
+.cut-option:hover,
+#custom-cut-btn:hover {
+    background: #555 !important;
+    transform: translateY(-1px);
+}
+
+.cut-option:active,
+#custom-cut-btn:active {
+    transform: translateY(0);
+}
+
+#custom-cut-input:focus {
+    outline: none;
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+/* Masquer les flèches d'augmentation/diminution pour l'input numérique */
+#custom-cut-input::-webkit-outer-spin-button,
+#custom-cut-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Pour Firefox */
+#custom-cut-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Styles pour l'aperçu des dimensions de coupe */
+#cut-preview {
+    line-height: 1.4;
+}
+
+/* Transition douce pour tous les boutons de coupe */
+.cut-option,
+#custom-cut-btn,
+#custom-cut-input {
+    transition: all 0.2s ease;
+}
+
+/* Curseurs personnalisés pour les outils */
+.extrusion-cursor {
+    cursor: ns-resize !important; /* Double flèche verticale pour l'extrusion */
+}
+
+.extrusion-active {
+    cursor: ns-resize !important;
+}
+
+.extrusion-mode * {
+    cursor: ns-resize !important;
+}
+
+/* Fin des curseurs personnalisés */
+
+/* Styles pour l'indicateur de saisie de distance */
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+#distance-input-indicator {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===============================
+   INTERFACE SOLEIL PÉDAGOGIQUE
+   =============================== */
+
+/* Diagramme solaire interactif */
+.sun-diagram-container {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.sun-diagram {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, #87ceeb 0%, #4682b4 70%, #2c3e50 100%);
+    border-radius: 50%;
+    border: 3px solid #34495e;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.horizon-line {
+    position: absolute;
+    bottom: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #2c3e50;
+    z-index: 2;
+}
+
+.sun-position {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle, #ffd700, #ff8c00);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px #ffd700;
+    z-index: 3;
+    transition: all 0.3s ease;
+}
+
+.cardinal-points {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.cardinal-point {
+    position: absolute;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.cardinal-point.north { 
+    top: 3px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    color: #e74c3c; 
+}
+
+.cardinal-point.south { 
+    bottom: 3px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+}
+
+.cardinal-point.east { 
+    right: 3px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+}
+
+.cardinal-point.west { 
+    left: 3px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+}
+
+/* Contrôles pédagogiques */
+.control-group-pedagogique {
+    margin-bottom: 18px;
+    padding: 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+}
+
+.control-group-pedagogique h4 {
+    margin: 0 0 10px 0;
+    color: #3498db;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.control-group-pedagogique h4 .fas {
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+.control-row-pedagogique {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.control-row-pedagogique label {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 100px;
+}
+
+.control-row-pedagogique .fas {
+    margin-right: 5px;
+    color: #95a5a6;
+    font-size: 11px;
+}
+
+.range-container-pedagogique {
+    flex: 1;
+    margin: 0 10px;
+}
+
+.styled-range {
+    width: 100%;
+    height: 5px;
+    background: #34495e;
+    border-radius: 3px;
+    outline: none;
+    appearance: none;
+}
+
+.styled-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.styled-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.value-display-pedagogique {
+    background: #34495e;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #3498db;
+    min-width: 45px;
+    text-align: center;
+    font-size: 11px;
+}
+
+.styled-select {
+    background: #34495e;
+    color: white;
+    border: 1px solid #3498db;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 9px;
+    flex: 1;
+    margin-left: 6px;
+}
+
+/* Presets saisonniers */
+.season-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.season-btn {
+    padding: 5px 6px;
+    background: rgba(52, 152, 219, 0.15);
+    border: 1px solid #3498db;
+    border-radius: 3px;
+    color: #3498db;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+}
+
+.season-btn .fas {
+    margin-right: 4px;
+}
+
+.season-btn:hover {
+    background: rgba(52, 152, 219, 0.3);
+    transform: translateY(-1px);
+}
+
+.season-btn.active {
+    background: #3498db;
+    color: white;
+}
+
+/* Toggle switches pédagogiques */
+.toggle-switch-pedagogique {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.toggle-switch-pedagogique input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-pedagogique {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #34495e;
+    transition: .3s;
+    border-radius: 20px;
+}
+
+.slider-pedagogique:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider-pedagogique {
+    background-color: #3498db;
+}
+
+input:checked + .slider-pedagogique:before {
+    transform: translateX(20px);
+}
+
+/* Informations solaires */
+.sun-info-pedagogique {
+    background: rgba(52, 73, 94, 0.3);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border-left: 3px solid #f39c12;
+}
+
+.sun-info-pedagogique h4 {
+    margin: 0 0 8px 0;
+    color: #f39c12;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.info-row-pedagogique {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px;
+}
+
+.info-row-pedagogique .label {
+    color: #bdc3c7;
+}
+
+.info-row-pedagogique .value {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Boîte pédagogique repliable */
+.pedagogy-box {
+    background: rgba(46, 204, 113, 0.08);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 6px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.pedagogy-header {
+    margin: 0;
+    padding: 10px 12px;
+    color: #2ecc71;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 12px;
+    background: rgba(46, 204, 113, 0.05);
+    border-bottom: 1px solid rgba(46, 204, 113, 0.2);
+    transition: background 0.3s ease;
+}
+
+.pedagogy-header:hover {
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.pedagogy-header .toggle-icon {
+    transition: transform 0.3s ease;
+    font-size: 10px;
+}
+
+.pedagogy-header.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.pedagogy-content {
+    padding: 12px;
+    max-height: 200px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.pedagogy-content.collapsed {
+    max-height: 0;
+    padding: 0 12px;
+}
+
+.pedagogy-content ul {
+    margin: 0;
+    padding-left: 15px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Dialogue de motifs de hachures */
+/* Styles de base pour les modales */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+#hatch-pattern-dialog .modal-content {
+    max-width: 600px;
+    width: 90%;
+}
+
+.pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.pattern-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #3e3e3e;
+}
+
+.pattern-item:hover {
+    border-color: #007acc;
+    background-color: #4e4e4e;
+}
+
+.pattern-item.selected {
+    border-color: #007acc;
+    background-color: #2d4a5a;
+    box-shadow: 0 0 10px rgba(0, 122, 204, 0.3);
+}
+
+.pattern-preview {
+    border: 1px solid #666;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.pattern-item.selected .pattern-preview {
+    border-color: #007acc;
+    box-shadow: 0 0 5px rgba(0, 122, 204, 0.5);
+}
+
+.pattern-item span {
+    font-size: 12px;
+    color: #e0e0e0;
+    text-align: center;
+}
+
+.pattern-controls {
+    border-top: 1px solid #555;
+    padding-top: 20px;
+}
+
+.pattern-controls .control-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+.pattern-controls label {
+    min-width: 120px;
+    font-size: 14px;
+    color: #e0e0e0;
+}
+
+.pattern-controls input[type="range"] {
+    flex: 1;
+    margin: 0 10px;
+}
+
+.pattern-controls input[type="color"] {
+    width: 40px;
+    height: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pattern-controls span {
+    min-width: 40px;
+    font-size: 14px;
+    color: #007acc;
+    font-weight: bold;
+}
+
+#hatch-pattern-dialog .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #555;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-secondary {
+    background-color: #666;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #777;
+}
+
+.btn-primary {
+    background-color: #007acc;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #005a9e;
+}
+

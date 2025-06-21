@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WallSim3D - Simulateur de murs 3D</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Import map pour Three.js -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.155.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.155.0/examples/jsm/",
+            "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.155.0/examples/jsm/controls/OrbitControls.js",
+            "three/examples/jsm/controls/TransformControls.js": "https://unpkg.com/three@0.155.0/examples/jsm/controls/TransformControls.js",
+            "three/examples/jsm/loaders/FontLoader.js": "https://unpkg.com/three@0.155.0/examples/jsm/loaders/FontLoader.js",
+            "three/examples/jsm/geometries/TextGeometry.js": "https://unpkg.com/three@0.155.0/examples/jsm/geometries/TextGeometry.js",
+            "three/examples/jsm/loaders/OBJLoader.js": "https://unpkg.com/three@0.155.0/examples/jsm/loaders/OBJLoader.js",
+            "three/addons/loaders/ColladaLoader.js": "https://unpkg.com/three@0.155.0/examples/jsm/loaders/ColladaLoader.js",
+            "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.155.0/examples/jsm/loaders/GLTFLoader.js",
+            "three/addons/loaders/STLLoader.js": "https://unpkg.com/three@0.155.0/examples/jsm/loaders/STLLoader.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Écran de chargement -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <img src="./logo/accueil.png" alt="WallSim3D">
+            </div>            <div class="splash-info">
+                <!-- <h1>WallSim3D</h1> -->
+                <p class="splash-version">Version 0.0.1 du 21-06-2025</p>
+                <button id="start-button" class="start-button">
+                    <i class="fas fa-play"></i>
+                    <span>Démarrer</span>
+                </button>
+                <div class="loading-section" id="loading-section" style="display: none;">
+                    <div class="loading-bar">
+                        <div class="loading-progress"></div>
+                    </div>
+                    <p class="loading-text" id="loading-text">Initialisation...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Barre de menu supérieure -->
+        <div class="menubar">
+            <div class="menu-item dropdown">
+                <span>Fichier</span>
+                <div class="dropdown-content">
+                    <a href="#" id="new-project">Nouveau</a>
+                    <a href="#" id="open-project">Ouvrir</a>
+                    <a href="#" id="import-collada">Importer COLLADA (.dae)</a>
+                    <a href="#" id="import-glb">Importer GLB (.glb)</a>
+                    <a href="#" id="import-skp">Importer SketchUp (.skp)</a>
+                    <a href="#" id="save-project">Enregistrer</a>
+                    <a href="#" id="export-project">Exporter</a>
+                </div>
+            </div>
+            <div class="menu-item dropdown">
+                <span>Édition</span>
+                <div class="dropdown-content">
+                    <a href="#" id="undo">Annuler</a>
+                    <a href="#" id="redo">Rétablir</a>
+                    <a href="#" id="copy">Copier</a>
+                    <a href="#" id="paste">Coller</a>
+                    <a href="#" id="delete">Supprimer</a>
+                </div>
+            </div>
+            <div class="menu-item dropdown">
+                <span>Vue</span>
+                <div class="dropdown-content">
+                    <a href="#" id="view-top">Vue de dessus</a>
+                    <a href="#" id="view-front">Vue de face</a>
+                    <a href="#" id="view-right">Vue de droite</a>
+                    <a href="#" id="view-iso">Vue isométrique</a>
+                    <a href="#" id="toggle-grid">Afficher/Masquer grille</a>
+                </div>
+            </div>
+            <div class="menu-item dropdown">
+                <span>Style</span>
+                <div class="dropdown-content">                    <a href="#" id="style-elements-color">Élément en couleur</a>
+                    <a href="#" id="style-elements-white">Élément en blancs</a>
+                </div>
+            </div>
+            <!-- Logo centré -->
+            <div class="menu-logo">
+                <img src="./logo/logo1.png" alt="Logo">
+            </div>
+            <!-- Ajout des boutons Annuler/Rétablir à droite -->
+            <div style="margin-left:auto; display:flex; align-items:center; gap:4px;">
+                <button class="toolbar-btn" id="toolbar-undo" data-tooltip="Annuler (Ctrl+Z)">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button class="toolbar-btn" id="toolbar-redo" data-tooltip="Rétablir (Ctrl+Y)">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barre d'outils principale -->
+        <div class="toolbar">
+            <!-- Boutons Fichier -->
+            <div class="toolbar-group">                <button class="toolbar-btn" id="toolbar-new">
+                    <i class="fas fa-plus"></i>
+                    <span class="toolbar-btn-text">Nouveau</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-open">
+                    <i class="fas fa-folder-open"></i>
+                    <span class="toolbar-btn-text">Ouvrir</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-import-collada" title="Importer un fichier COLLADA (.dae)">
+                    <i class="fas fa-file-import"></i>
+                    <span class="toolbar-btn-text">Importer DAE</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-import-glb" title="Importer un fichier GLB (.glb)">
+                    <i class="fas fa-cube"></i>
+                    <span class="toolbar-btn-text">Importer GLB</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-save">
+                    <i class="fas fa-save"></i>
+                    <span class="toolbar-btn-text">Enregistrer</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-export">
+                    <i class="fas fa-file-export"></i>
+                    <span class="toolbar-btn-text">Exporter</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-export-view-pdf" title="Exporter la vue actuelle en PDF">
+                    <i class="fas fa-camera"></i> <i class="fas fa-file-pdf" style="margin-left: -5px;"></i>
+                    <span class="toolbar-btn-text">Vue PDF</span>
+                </button>
+            </div>
+            
+            <div class="toolbar-separator"></div>
+            
+            <!-- Boutons Édition -->
+            <div class="toolbar-group">
+                <button class="toolbar-btn" id="toolbar-copy">
+                    <i class="fas fa-copy"></i>
+                    <span class="toolbar-btn-text">Copier</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-cut">
+                    <i class="fas fa-cut"></i>
+                    <span class="toolbar-btn-text">Couper</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-paste">
+                    <i class="fas fa-paste"></i>
+                    <span class="toolbar-btn-text">Coller</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-delete">
+                    <i class="fas fa-trash-alt"></i>
+                    <span class="toolbar-btn-text">Supprimer</span>
+                </button>
+            </div>
+            
+            <div class="toolbar-separator"></div>
+            
+            <!-- Boutons Vue et Navigation -->
+            <div class="toolbar-group">
+                <button class="toolbar-btn" id="toolbar-zoom-in">
+                    <i class="fas fa-search-plus"></i>
+                    <span class="toolbar-btn-text">Zoom +</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-zoom-out">
+                    <i class="fas fa-search-minus"></i>
+                    <span class="toolbar-btn-text">Zoom -</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-zoom-extents">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                    <span class="toolbar-btn-text">Tout voir</span>
+                </button>
+            </div>
+            
+            <div class="toolbar-separator"></div>
+            
+            <!-- Boutons Vues prédéfinies -->
+            <div class="toolbar-group">
+                <button class="toolbar-btn" id="toolbar-view-top">
+                    <img class="view-icon-img" src="./icones/vue_dessus.png" alt="Vue dessus">
+                    <span class="toolbar-btn-text">Dessus</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-view-iso">
+                    <img class="view-icon-img" src="./icones/vue_3d.png" alt="Vue 3D">
+                    <span class="toolbar-btn-text">3D</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-view-front">
+                    <img class="view-icon-img" src="./icones/vue_face.png" alt="Vue face">
+                    <span class="toolbar-btn-text">Face</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-view-back">
+                    <img class="view-icon-img" src="./icones/vue_arriere.png" alt="Vue arrière">
+                    <span class="toolbar-btn-text">Arrière</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-view-right">
+                    <img class="view-icon-img" src="./icones/vue_droite.png" alt="Vue droite">
+                    <span class="toolbar-btn-text">Droite</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-view-left">
+                    <img class="view-icon-img" src="./icones/vue_gauche.png" alt="Vue gauche">
+                    <span class="toolbar-btn-text">Gauche</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-view-orbit">
+                    <i class="fas fa-globe"></i>
+                    <span class="toolbar-btn-text">Orbite</span>
+                </button>
+                <button class="toolbar-btn" id="toolbar-snap">
+                    <i class="fas fa-magnet"></i>
+                    <span class="toolbar-btn-text">Aimant</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Zone principale -->
+        <div class="main-area">
+            <!-- Panneau latéral gauche -->
+            <div class="sidebar">
+                <div class="panel" id="tools-panel">
+                    <div class="panel-header" style="display: none;">
+                        <h3>Outils</h3>
+                    </div>                    <div class="panel-content">
+                        <div class="tool-group-container">
+                            <!-- Groupe Dessin -->
+                            <div class="tool-group-label">
+                                <span>Dessin</span>
+                            </div>
+                            <div class="tool-group">
+                                <button class="tool-btn" id="sidebar-select" title="Sélectionner">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-polyline" title="Polyligne">
+                                    <i class="fas fa-draw-polygon"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-rect" title="Rectangle">
+                                    <i class="fas fa-square"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-circle" title="Cercle">
+                                    <i class="fas fa-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tool-group-container">
+                            <!-- Groupe Outils -->
+                            <div class="tool-group-label">
+                                <span>Outils</span>
+                            </div>
+                            <div class="tool-group">
+                                <button class="tool-btn" id="sidebar-parallel" title="Parallèle">
+                                    <i class="fas fa-grip-lines"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-trim" title="Découper">
+                                    <i class="fas fa-cut"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-extend" title="Étendre">
+                                    <i class="fas fa-expand-arrows-alt"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-hatch" title="Hachures">
+                                    <i class="fas fa-grip-lines-vertical"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-surface" title="Créer surface">
+                                    <i class="fas fa-fill"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-extrude" title="Extruder">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <div class="tool-separator"></div>
+                                <button class="tool-btn" id="sidebar-library" title="Bibliothèque">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button class="tool-btn" id="sidebar-dimension" title="Cotation">
+                                    <i class="fas fa-ruler"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zone de visualisation -->
+            <div class="viewport-container">
+                <div id="viewport"></div>
+                
+                <!-- Axes de coordonnées -->
+                <div class="axis-indicator">
+                    <canvas id="axis-helper" width="100" height="100"></canvas>
+                </div>
+
+                <!-- D-pad de contrôle -->
+                <div class="dpad-container" id="dpad-container">
+                    <div class="dpad-title">Déplacer</div>
+                    <div class="dpad">
+                        <button class="dpad-btn dpad-up" id="dpad-up" title="Haut (Y+)">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="dpad-btn dpad-left" id="dpad-left" title="Gauche (X-)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="dpad-btn dpad-center" id="dpad-center" title="Réinitialiser Position">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                        <button class="dpad-btn dpad-right" id="dpad-right" title="Droite (X+)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="dpad-btn dpad-down" id="dpad-down" title="Bas (Y-)">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="dpad-vertical">
+                        <button class="dpad-btn dpad-z-up" id="dpad-z-up" title="Monter (Z+)">
+                            <i class="fas fa-arrow-up"></i> Z+
+                        </button>
+                        <button class="dpad-btn dpad-z-down" id="dpad-z-down" title="Descendre (Z-)">
+                            <i class="fas fa-arrow-down"></i> Z-
+                        </button>
+                    </div>
+                    <div class="dpad-step">
+                        <label for="dpad-step-size">Pas:</label>
+                        <input type="number" id="dpad-step-size" value="1" min="0.1" max="100" step="0.1">
+                        <span>cm</span>
+                    </div>
+                </div>
+                  <!-- Barre d'état -->
+                <div class="status-bar">
+                    <span id="coordinates">X: 0.00, Y: 0.00, Z: 0.00</span>
+                    <span id="mode-indicator">Mode: 2D</span>
+                    <span id="snap-indicator">Accrochage: ON</span>
+                    <button id="toggle-2d3d" class="btn-small">2D/3D</button>
+                    <button id="toggle-axes" class="btn-small" title="Afficher/Masquer les axes">Axes</button>
+                </div>
+            </div>
+
+            <!-- Barre latérale droite (multi-panneaux) -->
+            <div class="right-sidebar" id="right-sidebar">
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-panel="properties">
+                        <i class="fas fa-cube"></i>
+                        <span>Propriétés</span>
+                    </button>
+                    <button class="sidebar-tab" data-panel="data">
+                        <i class="fas fa-database"></i>
+                        <span>Données</span>
+                    </button>
+                    <button class="sidebar-tab" data-panel="textures">
+                        <i class="fas fa-palette"></i>
+                        <span>Textures</span>
+                    </button>
+                    <button class="sidebar-tab" data-panel="biblio">
+                        <i class="fas fa-th-large"></i>
+                        <span>Biblio</span>
+                    </button>
+                    <button class="sidebar-tab" data-panel="layers">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Calques</span>
+                    </button>
+                    <button class="sidebar-tab" data-panel="sunlight">
+                        <i class="fas fa-sun"></i>
+                        <span>Soleil</span>
+                    </button>
+                    <button class="sidebar-tab" data-panel="history">
+                        <i class="fas fa-history"></i>
+                        <span>Historique</span>
+                    </button>
+                </div>
+                
+                <div class="sidebar-panels">
+                    <!-- Panneau Propriétés -->
+                    <div class="panel sidebar-panel active" id="properties-panel">
+                        <div class="panel-header">
+                            <h3>Propriétés</h3>
+                            <button class="panel-toggle" title="Réduire">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="panel-content" id="properties-content">
+                            <p>Sélectionnez un objet pour voir ses propriétés</p>
+                        </div>
+                    </div>
+
+                    <!-- Panneau Données du Projet -->
+                    <div class="panel sidebar-panel" id="data-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3>Données du Projet</h3>
+                            <button class="panel-toggle" title="Réduire">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="panel-content" id="data-content">
+                            <div class="data-section">
+                                <div class="form-group">
+                                    <label for="project-name">Nom du Projet:</label>
+                                    <input type="text" id="project-name" class="data-input" value="Nouveau Projet">
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-client">Client:</label>
+                                    <input type="text" id="project-client" class="data-input" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-address">Adresse du chantier:</label>
+                                    <textarea id="project-address" class="data-textarea" rows="2"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-description">Description:</label>
+                                    <textarea id="project-description" class="data-textarea" rows="3">Description du projet.</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-designer">Dessinateur:</label>
+                                    <input type="text" id="project-designer" class="data-input" value="Utilisateur">
+                                </div>
+                                <div class="form-group">
+                                    <label for="procedure-template">Modèle de mode opératoire:</label>
+                                    <select id="procedure-template" class="data-input">
+                                        <option value="">-- Sélectionnez un modèle --</option>
+                                        <option value="mur-demi-brique">Mur 1/2 brique épaisseur</option>
+                                        <option value="mur-bloc-14">Mur bloc de 14</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-procedure">Mode opératoire:</label>
+                                    <textarea id="project-procedure" class="data-textarea" rows="30" placeholder="Décrivez le mode opératoire détaillé..." style="min-height: 400px; font-family: 'Consolas', monospace; white-space: pre-wrap;"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-notes">Notes:</label>
+                                    <textarea id="project-notes" class="data-textarea" rows="5" placeholder="Notes complémentaires..." style="min-height: 80px;"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button id="save-project-data" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Enregistrer Données
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Panneau Textures -->
+                    <div class="panel sidebar-panel" id="textures-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3>Textures & Couleurs</h3>
+                            <button class="panel-toggle" title="Réduire">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <p id="texture-instruction">Sélectionnez une texture/couleur puis cliquez sur un objet pour l'appliquer</p>
+                            
+                            <!-- Onglets pour Textures et Couleurs -->
+                            <div class="texture-tabs">
+                                <button class="texture-tab active" data-tab="textures">Textures</button>
+                                <button class="texture-tab" data-tab="colors">Couleurs</button>
+                            </div>
+                            
+                            <!-- Contrôles d'ajustement -->
+                            <div class="texture-controls" style="margin-bottom: 10px; display: none;" id="texture-controls">
+                                <!-- ...existing code... -->
+                            </div>
+                            
+                            <!-- Contenu des onglets -->
+                            <div class="tab-content">
+                                <!-- Onglet Textures -->
+                                <div id="textures-tab" class="tab-panel active">
+                                    <div id="texture-library" class="texture-grid">
+                                        <!-- Les textures seront ajoutées dynamiquement -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Onglet Couleurs -->
+                                <div id="colors-tab" class="tab-panel" style="display: none;">
+                                    <div class="color-section">
+                                        <h4>Couleurs prédéfinies</h4>
+                                        <div id="color-palette" class="color-grid">
+                                            <!-- Les couleurs seront ajoutées dynamiquement -->
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="color-section">
+                                        <h4>Couleur personnalisée</h4>
+                                        <div class="custom-color-controls">
+                                            <input type="color" id="custom-color-picker" value="#ffffff">
+                                            <button id="apply-custom-color" class="btn-small">Appliquer</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Panneau Bibliothèque d'éléments -->
+                    <div class="panel sidebar-panel" id="biblio-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3>Bibliothèque d'éléments</h3>
+                            <button class="panel-toggle" title="Réduire">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <!-- Suppression du bouton 'Éléments de construction' car il n'est plus nécessaire -->
+                        <!-- <button id="show-elements-library" class="btn" style="width: 100%; margin-bottom: 10px;">
+                            <i class="fas fa-shapes"></i> Éléments de construction
+                        </button> -->
+                        
+                            <!-- Section des éléments utilisés dans le modèle -->
+                            <div class="section-separator" style="margin: 15px 0; border-top: 1px solid #ddd;"></div>
+                            <div class="used-elements-section">
+                                <h4 style="margin: 10px 0; font-size: 14px; color: #555;">Éléments utilisés dans le modèle</h4>
+                                <div id="used-elements-list-display" class="used-elements-grid" style="
+                                    display: grid;
+                                    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                                    gap: 10px;
+                                    margin-top: 10px;
+                                    min-height: 50px;
+                                ">
+                                    <!-- Le contenu sera injecté par JavaScript -->
+                                </div>
+                            </div>
+                              <!-- Bibliothèque d'éléments directement intégrée -->
+                            <div id="elements-library" class="elements-library-content">                                <div class="element-categories">
+                                    <button class="category-tab active" data-category="briques">Briques</button>
+                                    <button class="category-tab" data-category="blocs">Blocs</button>
+                                    <button class="category-tab" data-category="linteaux">Linteaux</button>
+                                    <button class="category-tab" data-category="isolants">Isolants</button>
+                                    <button class="category-tab" data-category="planchers">Planchers</button>
+                                    <button class="category-tab" data-category="poutres">Poutres</button>
+                                    <button class="category-tab" data-category="outils">Outils</button>
+                                    <button class="category-tab" data-category="autres">Autres</button>
+                                </div>
+                                <div id="elements-grid" class="elements-grid">
+                                    <!-- Les éléments seront ajoutés dynamiquement -->
+                                </div>
+                                <div id="element-options" class="element-options" style="display: none;">
+                                    <h3>Options de l'élément</h3>
+                                    <div id="element-options-content">
+                                        <!-- Options dynamiques selon l'élément -->
+                                    </div>
+                                    <button id="add-element-to-scene" class="btn" style="margin-top: 10px;">
+                                        <i class="fas fa-plus"></i> Ajouter à la scène
+                                    </button>
+                                </div>
+                            </div>                              <!-- Modal cachée (gardée pour compatibilité) -->
+                            <div id="elements-modal" class="modal" style="display: none;">
+                                <div id="selected-element-info" style="margin-top: 10px;">
+                                    <p style="color: #888; font-size: 11px;">Aucun élément sélectionné</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Panneau Calques -->
+                    <div class="panel sidebar-panel" id="layers-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3>Calques</h3>
+                            <button class="panel-toggle" title="Réduire">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <div id="layers-list"></div>
+                            <button id="add-layer" class="btn" style="width: 100%; margin-top: 10px;">
+                                <i class="fas fa-plus"></i> Nouveau calque
+                            </button>
+                        </div>
+                    </div>                      <!-- Panneau Contrôle du soleil - VERSION PÉDAGOGIQUE -->
+                    <div id="sunlight-panel" class="panel sidebar-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-sun"></i> Étude de l'Ensoleillement</h3>
+                            <button class="panel-toggle"><i class="fas fa-chevron-up"></i></button>
+                        </div>
+                        <div class="panel-content">
+                            
+                            <!-- Diagramme solaire interactif -->
+                            <div class="sun-diagram-container">
+                                <div class="sun-diagram" id="sunDiagram">
+                                    <div class="horizon-line"></div>
+                                    <div class="sun-position animated" id="sunPosition"></div>
+                                    <div class="cardinal-points">
+                                        <div class="cardinal-point north">N</div>
+                                        <div class="cardinal-point south">S</div>
+                                        <div class="cardinal-point east">E</div>
+                                        <div class="cardinal-point west">O</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Contrôles temporels -->
+                            <div class="control-group-pedagogique">
+                                <h4><i class="fas fa-calendar-alt"></i> Période</h4>
+                                
+                                <div class="control-row-pedagogique">
+                                    <label><i class="fas fa-calendar"></i> Mois</label>
+                                    <select id="sun-month" class="styled-select">
+                                        <option value="12">Décembre (Solstice d'hiver)</option>
+                                        <option value="1">Janvier</option>
+                                        <option value="2">Février</option>
+                                        <option value="3">Mars (Équinoxe)</option>
+                                        <option value="4">Avril</option>
+                                        <option value="5">Mai</option>
+                                        <option value="6" selected>Juin (Solstice d'été)</option>
+                                        <option value="7">Juillet</option>
+                                        <option value="8">Août</option>
+                                        <option value="9">Septembre (Équinoxe)</option>
+                                        <option value="10">Octobre</option>
+                                        <option value="11">Novembre</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="control-row-pedagogique">
+                                    <label><i class="fas fa-clock"></i> Heure</label>
+                                    <div class="range-container-pedagogique">
+                                        <input type="range" id="sun-hour" min="6" max="18" value="12" step="0.5" class="styled-range">
+                                    </div>
+                                    <div class="value-display-pedagogique" id="hour-display">12h00</div>
+                                </div>
+                                
+                                <!-- Presets saisonniers -->
+                                <div class="season-presets">
+                                    <button class="season-btn" data-month="12" data-hour="12">
+                                        <i class="fas fa-snowflake"></i> Hiver
+                                    </button>
+                                    <button class="season-btn" data-month="6" data-hour="12">
+                                        <i class="fas fa-sun"></i> Été
+                                    </button>
+                                    <button class="season-btn" data-month="3" data-hour="12">
+                                        <i class="fas fa-seedling"></i> Printemps
+                                    </button>
+                                    <button class="season-btn" data-month="9" data-hour="12">
+                                        <i class="fas fa-leaf"></i> Automne
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Contrôles d'affichage -->
+                            <div class="control-group-pedagogique">
+                                <h4><i class="fas fa-eye"></i> Affichage</h4>
+                                
+                                <div class="control-row-pedagogique">
+                                    <label><i class="fas fa-sun"></i> Position solaire</label>
+                                    <label class="toggle-switch-pedagogique">
+                                        <input type="checkbox" id="show-sun-helper" checked>
+                                        <span class="slider-pedagogique"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="control-row-pedagogique">
+                                    <label><i class="fas fa-shadow"></i> Ombres portées</label>
+                                    <label class="toggle-switch-pedagogique">
+                                        <input type="checkbox" id="enable-shadows" checked>
+                                        <span class="slider-pedagogique"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="control-row-pedagogique">
+                                    <label><i class="fas fa-compass"></i> Indicateur Nord</label>
+                                    <label class="toggle-switch-pedagogique">
+                                        <input type="checkbox" id="show-north-indicator">
+                                        <span class="slider-pedagogique"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Orientation du Nord -->
+                            <div class="control-group-pedagogique">
+                                <h4><i class="fas fa-compass"></i> Orientation du Nord</h4>
+                                
+                                <div class="control-row-pedagogique">
+                                    <label><i class="fas fa-location-arrow"></i> Angle</label>
+                                    <div class="range-container-pedagogique">
+                                        <input type="range" id="north-angle" min="0" max="359" value="0" step="1" class="styled-range">
+                                    </div>
+                                    <div class="value-display-pedagogique" id="north-angle-display">0°</div>
+                                </div>
+                                
+                                <div class="preset-directions">
+                                    <button class="direction-btn" data-angle="0">Nord</button>
+                                    <button class="direction-btn" data-angle="90">Est</button>
+                                    <button class="direction-btn" data-angle="180">Sud</button>
+                                    <button class="direction-btn" data-angle="270">Ouest</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Informations solaires calculées -->
+                            <div class="sun-info-pedagogique">
+                                <h4><i class="fas fa-info-circle"></i> Données Solaires</h4>
+                                <div class="info-row-pedagogique">
+                                    <span class="label">Azimut solaire:</span>
+                                    <span class="value" id="solar-azimuth">180°</span>
+                                </div>
+                                <div class="info-row-pedagogique">
+                                    <span class="label">Élévation:</span>
+                                    <span class="value" id="solar-elevation">60°</span>
+                                </div>
+                                <div class="info-row-pedagogique">
+                                    <span class="label">Durée du jour:</span>
+                                    <span class="value" id="day-length">15h30</span>
+                                </div>
+                                <div class="info-row-pedagogique">
+                                    <span class="label">Lever/Coucher:</span>
+                                    <span class="value" id="sunrise-sunset">5h15 - 20h45</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Encadré pédagogique (repliable) -->
+                            <div class="pedagogy-box">
+                                <h4 class="pedagogy-header" onclick="togglePedagogyBox()">
+                                    <i class="fas fa-graduation-cap"></i> Comprendre l'Ensoleillement
+                                    <i class="fas fa-chevron-down toggle-icon"></i>
+                                </h4>
+                                <div class="pedagogy-content" id="pedagogyContent">
+                                    <ul>
+                                        <li><strong>Azimut :</strong> Angle horizontal du soleil (0°=Nord, 90°=Est, 180°=Sud, 270°=Ouest)</li>
+                                        <li><strong>Élévation :</strong> Angle vertical du soleil par rapport à l'horizon</li>
+                                        <li><strong>Solstices :</strong> Juin (soleil le plus haut), Décembre (le plus bas)</li>
+                                        <li><strong>Équinoxes :</strong> Mars et Septembre (jour = nuit, 12h chacun)</li>
+                                        <li><strong>Façade Sud :</strong> La plus ensoleillée en hiver (chauffage passif)</li>
+                                        <li><strong>Protection Est/Ouest :</strong> Importante en été (surchauffe)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Panneau Historique -->
+                    <div class="panel sidebar-panel" id="history-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3>Historique</h3>
+                            <button class="panel-toggle" title="Réduire">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <div id="history-list"></div>
+                        </div>                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Barre de statut -->
+    <div id="status-bar">
+        <div id="command-output">Prêt</div>
+    </div>
+
+    <!-- Menu contextuel pour les objets -->
+    <div id="object-context-menu" class="object-context-menu" style="display: none;">
+        <div class="context-menu-item" id="context-copy">
+            <i class="fas fa-copy"></i> Copier
+        </div>
+        <div class="context-menu-item" id="context-cut">
+            <i class="fas fa-cut"></i> Couper
+        </div>
+        <div class="context-menu-item" id="context-duplicate">
+            <i class="fas fa-clone"></i> Dupliquer
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-properties">
+            <i class="fas fa-cog"></i> Propriétés
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-delete">
+            <i class="fas fa-trash"></i> Supprimer
+        </div>
+    </div>    <!-- Chargement des scripts avec type="module" -->
+    <script type="module" src="app.js"></script>
+    <script src="js/managers/UsedElementsManager.js"></script>
+    <script src="js/sunlight-pedagogical.js"></script>
+    
+    <script>
+    // Variable globale pour stocker l'outil actuel
+    window.lastUsedTool = 'select';
+
+    // Ajout d'une fonction globale pour supprimer tous les Hourdis (anti-erreur)
+    window.obliterateAllHourdis = function() {
+        if (!window.trackedConstructionElements) return;
+        let before = window.trackedConstructionElements.length;
+        window.trackedConstructionElements = window.trackedConstructionElements.filter(element => {
+            if (!element || !element.name) return true;
+            const name = element.name.toLowerCase();
+            return !(name.includes('hourdis') || name.includes('13+6'));
+        });
+        let after = window.trackedConstructionElements.length;
+        if (before !== after) {
+            console.log(`obliterateAllHourdis: ${before - after} Hourdis supprimés`);
+            if (window.updateUsedElementsDisplay) window.updateUsedElementsDisplay();
+        }
+        // Remove from scene if needed
+        if (window.app && window.app.scene) {
+            let toRemove = [];
+            window.app.scene.traverse(obj => {
+                if (obj.userData && obj.userData.elementType) {
+                    const name = obj.userData.elementType.toLowerCase();
+                    if (name.includes('hourdis') || name.includes('13+6')) {
+                        toRemove.push(obj);
+                    }
+                }
+            });
+            toRemove.forEach(obj => {
+                if (obj.parent) obj.parent.remove(obj);
+                // Remove from app.objects and layers if present
+                if (window.app.objects) {
+                    window.app.objects = window.app.objects.filter(o => o !== obj);
+                }
+                if (window.app.layers && window.app.currentLayer && window.app.layers[window.app.currentLayer]?.objects) {
+                    window.app.layers[window.app.currentLayer].objects =
+                        window.app.layers[window.app.currentLayer].objects.filter(o => o !== obj);
+                }
+            });
+        }
+        // Optionnel, afficher un retour d'information
+        if (window.commandOutput || document.getElementById('command-output')) {
+            (window.commandOutput || document.getElementById('command-output')).textContent =
+                "Tous les éléments Hourdis ont été supprimés.";
+        }
+    };
+
+    // Fonction pour activer le mode orbite
+    function activateOrbitMode() {
+        if (window.app && window.app.controls) {
+            window.app.controls.enabled = true;
+            const orbitBtn = document.getElementById('toolbar-view-orbit');
+            orbitBtn?.classList.add('active');
+            console.log('Mode orbite activé automatiquement');
+        }
+    }
+    
+    // Fonction pour désactiver le mode orbite
+    function deactivateOrbitMode() {
+        if (window.app && window.app.controls) {
+            window.app.controls.enabled = false;
+            const orbitBtn = document.getElementById('toolbar-view-orbit');
+            orbitBtn?.classList.remove('active');
+            console.log('Mode orbite désactivé automatiquement');
+        }
+    }
+    
+    // Ajouter la méthode manquante immédiatement
+    window.addEventListener('load', () => {
+        // Test simple du clic droit après le chargement de l'application
+        setTimeout(() => {
+            console.log('Test du clic droit - vérification des événements');
+            
+            // Vérifier si l'application et le SelectionManager existent
+            if (window.app && window.app.selectionManager) {
+                console.log('✅ Application et SelectionManager trouvés');
+                
+                // Vérifier si le menu contextuel existe
+                const contextMenu = document.getElementById('object-context-menu');
+                if (contextMenu) {
+                    console.log('✅ Menu contextuel trouvé dans le DOM');
+                } else {
+                    console.log('❌ Menu contextuel non trouvé dans le DOM');
+                }
+                
+                // Ajouter un test de clic droit direct sur le canvas
+                const canvas = window.app.renderer.domElement;
+                if (canvas) {
+                    console.log('✅ Canvas trouvé, ajout du test de clic droit');
+                    
+                    // Test manuel du clic droit
+                    canvas.addEventListener('contextmenu', (e) => {
+                        console.log('🖱️ Clic droit détecté sur le canvas !', e);
+                    });
+                      // Test de simulation
+                    console.log('🧪 Vous pouvez maintenant tester le clic droit sur les objets dessinés');
+                } else {
+                    console.log('❌ Canvas non trouvé');
+                }
+            } else {
+                console.log('❌ Application ou SelectionManager non trouvé');
+                // Réessayer dans 1 seconde avec une fonction nommée
+                setTimeout(() => {
+                    console.log('Nouvelle tentative de vérification...');
+                    if (window.app && window.app.selectionManager) {
+                        console.log('✅ Application et SelectionManager trouvés lors de la nouvelle tentative');
+                        
+                        const contextMenu = document.getElementById('object-context-menu');
+                        if (contextMenu) {
+                            console.log('✅ Menu contextuel trouvé dans le DOM');
+                        } else {
+                            console.log('❌ Menu contextuel non trouvé dans le DOM');
+                        }
+                        
+                        const canvas = window.app.renderer.domElement;
+                        if (canvas) {
+                            console.log('✅ Canvas trouvé, test de clic droit prêt');
+                            canvas.addEventListener('contextmenu', (e) => {
+                                console.log('🖱️ Clic droit détecté sur le canvas !', e);
+                            });
+                        }
+                    } else {
+                        console.log('⏳ Attente de l\'initialisation de l\'application...');
+                    }
+                }, 1000);
+            }
+        }, 2000);
+          // Intercepter les changements d'outils avec possibilité de désélection
+        setTimeout(() => {
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                // Exclure le bouton library qui a son propre gestionnaire d'événements
+                if (btn.id === 'sidebar-library') {
+                    return; // Ignorer le bouton library
+                }
+                
+                btn.addEventListener('click', function() {
+                    const toolId = this.id.replace('sidebar-', '');
+                    
+                    // Si c'est le bouton sélectionner, toujours l'activer et désactiver les autres
+                    if (toolId === 'select') {
+                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        window.lastUsedTool = 'select';
+                        // Désactiver le mode orbite quand on passe en mode sélection
+                        deactivateOrbitMode();
+                        if (window.app && window.app.setTool) {
+                            window.app.setTool('select');
+                        }
+                        console.log('Mode sélection activé');
+                    } else {
+                        // Pour les autres outils, permettre la désélection
+                        if (this.classList.contains('active') && toolId === window.lastUsedTool) {
+                            // Désélectionner l'outil actuel et activer le mode orbite
+                            this.classList.remove('active');
+                            window.lastUsedTool = 'orbit';
+                            if (window.app && window.app.setTool) {
+                                window.app.setTool('select');
+                            }
+                            activateOrbitMode();
+                            console.log('Outil désélectionné, passage en mode orbite');
+                        } else {
+                            // Activer le nouvel outil et désactiver le mode orbite
+                            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                            this.classList.add('active');
+                            window.lastUsedTool = toolId;
+                            // Désactiver le mode orbite quand on sélectionne un outil de dessin
+                            deactivateOrbitMode();
+                            console.log('Outil sélectionné:', toolId);
+                        }
+                    }
+                });
+            });
+            
+            // Activer le mode sélection par défaut
+            document.getElementById('sidebar-select')?.classList.add('active');
+        }, 1000);
+        
+        // Vérifier périodiquement jusqu'à ce que UIManager soit disponible
+        const checkInterval = setInterval(() => {
+            if (window.app && window.app.uiManager) {
+                if (!window.app.uiManager.updateHistoryPanel) {
+                    window.app.uiManager.updateHistoryPanel = function() {
+                        console.log('updateHistoryPanel appelé (méthode temporaire)');
+                        const historyList = document.getElementById('history-list');
+                        if (historyList) {
+                            // Mettre à jour même si le panneau n'est pas visible
+                            if (window.app.history && window.app.history.length > 0) {
+                                historyList.innerHTML = '';
+                                
+
+                                window.app.history.forEach((item, index) => {
+                                    const historyItem = document.createElement('div');
+                                    historyItem.style.cssText = 'padding: 8px 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 12px; transition: background-color 0.2s;';
+                                    
+                                    // Déterminer le texte à afficher
+                                    let actionText = 'Action';
+                                    
+                                    // Utiliser 'action' au lieu de 'type' car c'est ce qui est dans l'historique
+                                    const itemAction = item.action || item.type || '';
+                                    
+                                    if (itemAction === 'create') {
+                                        // Utiliser l'outil stocké ou le dernier outil utilisé
+                                        const toolUsed = item.tool || window.lastUsedTool || window.app.currentTool;
+                                        
+                                        switch(toolUsed) {
+                                            case 'rect':
+                                            case 'rectangle':
+                                                actionText = 'Rectangle créé';
+                                                break;
+                                            case 'circle':
+                                                actionText = 'Cercle créé';
+                                                break;
+                                            case 'arc':
+                                                actionText = 'Arc créé';
+                                                break;
+                                            case 'polyline':
+                                                actionText = 'Polyligne créée';
+                                                break;
+                                            case 'line':
+                                                actionText = 'Ligne créée';
+                                                break;
+                                            case 'parallel':
+                                                actionText = 'Parallèle créée';
+                                                break;
+                                            default:
+                                                actionText = 'Objet créé';
+                                        }
+                                    } else if (itemAction === 'extrude') {
+                                        actionText = 'Extrusion appliquée';
+                                    } else if (itemAction === 'delete') {
+                                        actionText = 'Objet supprimé';
+                                    } else if (itemAction === 'move') {
+                                        actionText = 'Objet déplacé';
+                                    } else if (itemAction === 'rotate') {
+                                        actionText = 'Objet pivoté';
+                                    } else if (itemAction === 'scale') {
+                                        actionText = 'Échelle modifiée';
+                                    } else if (itemAction === 'texture') {
+                                        actionText = 'Texture appliquée';
+                                    } else if (itemAction === 'color') {
+                                        actionText = 'Couleur appliquée';
+                                    } else if (itemAction === 'element') {
+                                        // Pour les éléments de construction
+                                        if (item.elementType) {
+                                            actionText = `${item.elementType} ajouté`;
+                                        } else {
+                                            actionText = 'Élément ajouté';
+                                        }
+                                    } else if (itemAction && itemAction.length > 0) {
+                                        // Utiliser l'action directement si elle n'est pas reconnue
+                                        actionText = itemAction.charAt(0).toUpperCase() + itemAction.slice(1);
+                                    }
+                                    
+                                    historyItem.innerHTML = `
+                                        <div style="font-weight: bold; color: #333;">${index + 1}. ${actionText}</div>
+                                        ${item.timestamp ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">${new Date(item.timestamp).toLocaleTimeString()}</div>` : ''}
+
+                                    `;
+                                    historyItem.onmouseenter = function() { this.style.backgroundColor = '#f5f5f5'; };
+                                    historyItem.onmouseleave = function() { this.style.backgroundColor = 'transparent'; };
+                                    historyItem.onclick = () => {
+                                        console.log('Historique item cliqué:', index, item);
+                                    };
+                                    historyList.appendChild(historyItem);
+                                });
+                            } else {
+                                historyList.innerHTML = '<p style="text-align: center; color: #999; font-size: 12px; padding: 20px;">Aucune action dans l\'historique</p>';
+                            }
+                        }
+                    };
+                    
+                    // Intercepter la méthode addToHistory pour ajouter l'outil actuel
+                    setTimeout(() => {
+                        if (window.app && window.app.addToHistory) {
+                            const originalAddToHistory = window.app.addToHistory.bind(window.app);
+                            window.app.addToHistory = function(action, data = {}) {
+                                // Ajouter l'outil actuel aux données
+                                const enhancedData = {
+                                    ...data,
+                                    tool: window.lastUsedTool || window.app.currentTool
+                                };
+                                
+                                // Si c'est une création d'objet, activer le mode orbite
+                                if (action === 'create') {
+                                    setTimeout(() => {
+                                        // Désélectionner tous les outils de la sidebar
+                                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                                        window.lastUsedTool = 'orbit';
+                                        activateOrbitMode();
+                                        console.log('Objet créé, passage automatique en mode orbite');
+                                    }, 100);
+                                }
+                                
+                                return originalAddToHistory(action, enhancedData);
+                            };
+                            console.log('Méthode addToHistory interceptée');
+                        }
+                    }, 2000);
+                    
+                    console.log('Méthode updateHistoryPanel ajoutée à UIManager');
+                }
+                clearInterval(checkInterval);
+            }
+        }, 10); // Vérifier toutes les 10ms
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // INTERCEPTEUR ULTRA-PRÉCOCE pour empêcher tout Hourdis
+        if (window.trackedConstructionElements) {
+            // Créer un proxy pour surveiller toutes les modifications
+            window.trackedConstructionElements = new Proxy(window.trackedConstructionElements || [], {
+                set(target, property, value) {
+                    // Bloquer l'ajout de tout élément Hourdis
+                    if (value && value.name && typeof value.name === 'string') {
+                        const name = value.name.toLowerCase();
+                        if (name.includes('hourdis') || name.includes('13+6')) {
+                            console.log('PROXY BLOCAGE HOURDIS:', value.name);
+                            return true; // Prétendre que l'opération a réussi mais ne rien faire
+                        }
+                    }
+                    target[property] = value;
+                    return true;
+                }
+            });
+        }
+        
+        // Système de tracking des éléments de construction avec FILTRAGE ANTI-HOURDIS
+        window.trackedConstructionElements = window.trackedConstructionElements || [];
+
+        const elementDisplayInfo = {
+            // Briques spécifiques
+            'Brique M50': { name: 'Brique M50', icon: '🧱' },
+            'Brique M57': { name: 'Brique M57', icon: '🧱' },
+            'Brique M65': { name: 'Brique M65', icon: '🧱' },
+            'Brique M90': { name: 'Brique M90', icon: '🧱' },
+            'Brique WF': { name: 'Brique WF', icon: '🧱' },
+            'Brique WFD': { name: 'Brique WFD', icon: '🧱' },
+            
+            // Blocs spécifiques
+            'Bloc creux B9': { name: 'Bloc B9', icon: '⬜' },
+            'Bloc creux B14': { name: 'Bloc B14', icon: '⬜' },
+            'Bloc creux B19': { name: 'Bloc B19', icon: '⬜' },
+            'Bloc creux B29': { name: 'Bloc B29', icon: '⬜' },
+            'Bloc B9': { name: 'Bloc B9', icon: '⬜' },
+            'Bloc B14': { name: 'Bloc B14', icon: '⬜' },
+            'Bloc B19': { name: 'Bloc B19', icon: '⬜' },
+            'Bloc B29': { name: 'Bloc B29', icon: '⬜' },
+            'Bloc Argex 39x9x19': { name: 'Bloc Argex 9', icon: '⬜' },
+            'Bloc Argex 39x14x19': { name: 'Bloc Argex 14', icon: '⬜' },
+            'Bloc Argex 39x19x19': { name: 'Bloc Argex 19', icon: '⬜' },
+            'Bloc béton cell. 5cm': { name: 'Béton Cell. 5cm', icon: '⬜' },
+            'Bloc béton cell. 7cm': { name: 'Béton Cell. 7cm', icon: '⬜' },
+            'Bloc béton cell. 10cm': { name: 'Béton Cell. 10cm', icon: '⬜' },
+            'Bloc béton cell. 15cm': { name: 'Béton Cell. 15cm', icon: '⬜' },
+            'Bloc béton cell. 17.5cm': { name: 'Béton Cell. 17.5cm', icon: '⬜' },
+            'Bloc béton cell. 20cm': { name: 'Béton Cell. 20cm', icon: '⬜' },
+            'Bloc béton cell. 24cm': { name: 'Béton Cell. 24cm', icon: '⬜' },
+            'Stepoc15N': { name: 'Stepoc15N', icon: '⬜' },
+            
+            // SECTION PLANCHERS VIDE - TOUT HOURDIS SUPPRIMÉ
+            // ...existing code...
+            
+            // Nouveaux blocs B
+            'Bloc B9': { name: 'Bloc B9', icon: '⬜' },
+            'Bloc B14': { name: 'Bloc B14', icon: '⬜' },
+            'Bloc B19': { name: 'Bloc B19', icon: '⬜' },
+            'Bloc B29': { name: 'Bloc B29', icon: '⬜' },
+            'Bloc Argex 39x9x19': { name: 'Bloc Argex 9', icon: '⬜' },
+            'Bloc Argex 39x14x19': { name: 'Bloc Argex 14', icon: '⬜' },
+            'Bloc Argex 39x19x19': { name: 'Bloc Argex 19', icon: '⬜' },
+            
+            // Nouveaux linteaux
+            'Linteau L120_14': { name: 'Linteau L120_14', icon: '🧱' },
+            'Linteau L140_14': { name: 'Linteau L140_14', icon: '🧱' },
+            'Linteau L160_14': { name: 'Linteau L160_14', icon: '🧱' },
+            'Linteau L180_14': { name: 'Linteau L180_14', icon: '🧱' },
+            'Linteau L200_14': { name: 'Linteau L200_14', icon: '🧱' },
+            
+            // Nouveaux isolants
+            'Isolant PUR5': { name: 'Isolant PUR5', icon: '🟡' },
+            'Isolant PUR6': { name: 'Isolant PUR6', icon: '🟡' },
+            'Isolant PUR7': { name: 'Isolant PUR7', icon: '🟡' },
+            
+            // Nouveaux autres
+            'Vide': { name: 'Vide', icon: '⬜' },
+            'Profil': { name: 'Profil', icon: '📏' },
+        };
+
+        // FILTRE ANTI-HOURDIS pour la fonction updateUsedElementsDisplay
+        /* START: Commenting out conflicting function definition
+        function updateUsedElementsDisplay() {
+            const container = document.getElementById('used-elements-list-display');
+            if (!container) {
+                console.warn('Used elements container not found.');
+                return;
+            }
+            if (!window.trackedConstructionElements) {
+                window.trackedConstructionElements = [];
+            }
+            
+            // ÉTAPE 1: FILTRAGE PRÉALABLE ULTRA-AGRESSIF
+            window.trackedConstructionElements = window.trackedConstructionElements.filter(element => {
+                if (!element || !element.name) return false;
+                const name = element.name.toLowerCase();
+                const isHourdis = name.includes('hourdis') || 
+                                 name.includes('13+6') || 
+                                 (name.includes('13') && name.includes('6'));
+                if (isHourdis) {
+                    console.log('ÉTAPE 1 - HOURDIS DÉTECTÉ ET SUPPRIMÉ:', element.name);
+                    return false;
+                }
+                return true;
+            });
+            
+            container.innerHTML = '';
+            const displayedElementIds = new Set();
+
+            // ÉTAPE 2: DOUBLE VÉRIFICATION À L'AFFICHAGE
+            window.trackedConstructionElements.forEach(elementData => {
+                if (!elementData || !elementData.id || displayedElementIds.has(elementData.id)) {
+                    return;
+                }
+                
+                // ÉTAPE 3: TRIPLE VÉRIFICATION ANTI-HOURDIS AVANT AFFICHAGE
+                if (elementData.name) {
+                    const name = elementData.name.toLowerCase();
+                    if (name.includes('hourdis') || name.includes('13+6') || (name.includes('13') && name.includes('6'))) {
+                        console.log('ÉTAPE 3 - HOURDIS BLOQUÉ à l\'affichage:', elementData.name);
+                        return; // Ne pas afficher les hourdis
+                    }
+                }
+
+                const div = document.createElement('div');
+                div.className = 'used-element-item';
+                div.textContent = `${elementData.name} (x${elementData.count || 1})`; // Afficher le nom et le compteur
+                div.onclick = () => {
+                    if (window.app && window.app.uiManager && window.app.uiManager.insertElementByType) {
+                        window.app.uiManager.insertElementByType(elementData.name, { category: elementData.category });
+                    }
+                };
+                container.appendChild(div);
+                displayedElementIds.add(elementData.id);
+            });
+
+            if (container.children.length === 0) {
+                container.innerHTML = '<div class="no-elements-message">Aucun élément utilisé</div>';
+            }
+        }
+        END: Commenting out conflicting function definition */
+
+        // Initialisation de la liste des éléments utilisés (appelée depuis UsedElementsManager.js via DOMContentLoaded)
+        // updateUsedElementsDisplay(); // Commented out: This should be managed by UsedElementsManager.js
+
+        // ... existing code ...
+    });
+    
+    // --- Gestion des styles (blanc/couleur) - Portée globale ---
+    window.app = window.app || {};
+    window.app.originalMaterials = new Map();
+    window.app.isWhiteStyleActive = false;
+    
+    let whiteMeshMaterial, whiteLineMaterial;
+    
+    function initializeWhiteMaterials() {
+        // Wait for app to be fully initialized
+        if (!window.app || !window.app.THREE) {
+            return false;
+        }
+        
+        const THREE = window.app.THREE;
+        
+        if (!whiteMeshMaterial) {            whiteMeshMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xffffff,
+                emissive: 0xffffff,  // Ajout d'une émissivité blanche
+                emissiveIntensity: 0.8,  // Intensité très élevée pour un blanc éclatant
+                shininess: 80,        // Très brillant
+                side: THREE.DoubleSide 
+            });
+        }
+        if (!whiteLineMaterial) {
+            whiteLineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0xffffff, 
+                linewidth: 2 
+            });
+        }
+        console.log('Matériaux blancs initialisés');
+        return true;
+    }
+    
+    // Check more frequently and for a longer time
+    const checkThreeInterval = setInterval(() => {
+        if (window.app && window.app.THREE && initializeWhiteMaterials()) {
+            clearInterval(checkThreeInterval);
+        }
+    }, 100);
+    
+    setTimeout(() => clearInterval(checkThreeInterval), 20000); // Extended timeout
+    
+    window.setElementsWhiteStyle = function() {
+        if (!window.app || !window.app.scene) {
+            console.warn('Application ou scène non disponible');
+            document.getElementById('command-output').textContent = 'Erreur: Application non prête';
+            return;
+        }
+        
+        if (!window.app.THREE) {
+            console.error('THREE.js non disponible dans window.app');
+            document.getElementById('command-output').textContent = 'Erreur: THREE.js non disponible';
+            return;
+        }
+        
+        if (!window.app.originalMaterials) {
+            window.app.originalMaterials = new Map();
+        }
+        
+        if (!whiteMeshMaterial || !whiteLineMaterial) {
+            if (!initializeWhiteMaterials()) {
+                console.error('Impossible d\'initialiser les matériaux blancs');
+                document.getElementById('command-output').textContent = 'Erreur: Matériaux non initialisés';
+                return;
+            }
+        }
+        
+        if (window.app.isWhiteStyleActive) {
+            console.log('Style blanc déjà actif');
+            return;
+        }
+        
+        window.app.isWhiteStyleActive = true;
+        window.app.originalMaterials.clear();
+        
+        let objectCount = 0;
+        
+        // Parcourir tous les objets de la scène
+        window.app.scene.traverse((object) => {
+            if (object.isMesh || object.isLine || object.isLineSegments) {
+                // Ignorer les helpers et grilles
+                if (object.name === 'GridHelper' || object.name === 'AxesHelper' || 
+                    object.name.includes('Helper') || object.userData?.isHelper ||
+                    object.userData?.isAxisIndicator) {
+                    return;
+                }
+                
+                // Sauvegarder le matériau original
+                if (object.material) {
+                    // Gérer les matériaux multiples
+                    if (Array.isArray(object.material)) {
+                        window.app.originalMaterials.set(object.uuid, object.material.slice());
+                        object.material = object.material.map(() => 
+                            object.isMesh ? whiteMeshMaterial : whiteLineMaterial
+                        );
+                    } else {
+                        window.app.originalMaterials.set(object.uuid, object.material);
+                        if (object.isMesh) {
+                            object.material = whiteMeshMaterial;
+                        } else if (object.isLine || object.isLineSegments) {
+                            object.material = whiteLineMaterial;
+                        }
+                    }
+                    objectCount++;
+                }
+            }
+        });
+        
+        console.log(`Style blanc appliqué à ${objectCount} objets`);
+        
+        // Forcer le rendu
+        if (window.app.render) {
+            window.app.render();
+        }
+        
+        document.getElementById('command-output').textContent = 'Style: Éléments en blancs appliqué';
+    }
+    
+    window.setElementsColorStyle = function() {
+        if (!window.app || !window.app.scene) {
+            console.warn('Application ou scène non disponible');
+           
+            document.getElementById('command-output').textContent = 'Erreur: Application non prête';
+            return;
+        }
+        
+        if (!window.app.originalMaterials) {
+            window.app.originalMaterials = new Map();
+        }
+        
+        if (!window.app.isWhiteStyleActive) { // Corrected condition: if color style is already active (white style is NOT active)
+            console.log('Style couleur déjà actif');
+            document.getElementById('command-output').textContent = 'Style: Éléments déjà en couleur';
+            return;
+        }
+        
+        // Proceed to restore colors because white style was active
+        window.app.isWhiteStyleActive = false;
+        
+        let objectCount = 0;
+        
+        // Restaurer les matériaux originaux
+        window.app.scene.traverse((object) => {
+            if (object.isMesh || object.isLine || object.isLineSegments) {
+                const originalMaterial = window.app.originalMaterials.get(object.uuid);
+                if (originalMaterial) {
+                    object.material = originalMaterial;
+                    objectCount++;
+                }
+            }
+        });
+        
+        window.app.originalMaterials.clear();
+        
+        console.log(`Couleurs restaurées pour ${objectCount} objets`);
+        
+        // Forcer le rendu
+        if (window.app.render) {
+            window.app.render();
+        }
+        
+        document.getElementById('command-output').textContent = 'Style: Éléments en couleur restauré';
+    }
+    </script>
+    
+    <script>
+    // Templates de mode opératoire
+    const procedureTemplates = {
+        'mur-demi-brique': `1. Préparation & Traçage : Préparez outils/matériaux. Tracez l'emplacement du muret au sol avec un cordeau.
+2. Mortier : Mélangez 1 vol. ciment pour 3-4 vol. sable avec de l'eau (consistance souple).
+3. 1ère Assise (Cruciale) : Étalez un lit de mortier. Posez la 1ère brique, nivelez-la parfaitement (longueur/largeur).
+4. Suite 1ère Assise : Beurrez le bout des briques suivantes, posez-les avec un joint de 1 cm, alignez et nivelez.
+5. Assises Suivantes : Montez en décalant les joints verticaux (quinconce) pour la solidité.
+6. Pose & Contrôles : Sur chaque assise, étalez le mortier, posez les briques en vérifiant constamment l'alignement (cordeau), le niveau (horizontal) et l'aplomb (vertical).
+7. Nettoyage en Cours : Retirez l'excès de mortier frais avec la truelle au fur et à mesure.
+8. Préparation Rejointoiement : Laissez le mortier prendre légèrement (ne colle plus au doigt).
+9. Rejointoiement : Garnissez les joints avec du mortier frais à l'aide d'un fer à joint, en lissant pour une belle finition.
+10. Nettoyage Final : Brossez le muret pour enlever les débris de mortier et nettoyez vos outils.`,
+        'mur-bloc-14': `1. Préparation & Traçage : Préparez zone, outils (niveau, truelle, massette, cordeau) et matériaux (blocs de 14, mortier). Tracez l'emplacement au sol.
+2. Mortier : Préparez un mortier de maçonnerie (ex: 1 vol. ciment pour 3-4 vol. sable + eau) à consistance onctueuse.
+3. 1ère Assise (Fondation) : Étalez un lit de mortier de 2-3 cm. Posez le premier bloc, ajustez-le et nivelez-le parfaitement dans les deux sens.
+4. Suite 1ère Assise : Beurrez les "oreilles" (côtés) du bloc suivant. Posez-le contre le premier (joint ~1 cm), alignez et nivelez.
+5. Assises Suivantes (Décalage) : Montez les assises en décalant les joints verticaux d'un demi-bloc pour la solidité (appareillage en quinconce).
+6. Pose & Contrôles Continus : Sur chaque assise, étalez le mortier. Posez les blocs en vérifiant constamment l'alignement (cordeau), le niveau horizontal et l'aplomb (vertical).
+7. Ajustements & Excès : Utilisez la massette pour de légers ajustements si besoin. Enlevez l'excès de mortier avec la truelle.
+8. Finition des Joints (Préparation) : Laissez le mortier des joints raffermir (quand il ne s'enfonce plus sous le doigt).
+9. Rejointoiement/Lissage : Garnissez et lissez les joints avec une truelle langue de chat ou un fer à joint pour une finition propre.
+10. Nettoyage Final : Brossez le muret pour enlever les résidus de mortier et nettoyez soigneusement vos outils.`
+    };
+
+    document.getElementById('procedure-template').addEventListener('change', function() {
+
+        const selectedTemplate = this.value;
+        const procedureTextarea = document.getElementById('project-procedure');
+        if (selectedTemplate && procedureTemplates[selectedTemplate]) {
+            procedureTextarea.value = procedureTemplates[selectedTemplate];
+        }    });
+    </script>
+    
+    <!-- Validation du menu contextuel -->
+    <script>
+        // Quick validation script for context menu functionality
+        console.log('%c=== Context Menu Validation Script ===', 'color: #00ff00; font-weight: bold;');
+
+        // Check if SelectionManager is properly imported and initialized
+        setTimeout(() => {
+            if (window.app) {
+                console.log('%c✅ App initialized', 'color: #00ff00;');
+                
+                if (window.app.selectionManager) {
+                    console.log('%c✅ SelectionManager found', 'color: #00ff00;');
+                    
+                    if (typeof window.app.selectionManager.handleRightClick === 'function') {
+                        console.log('%c✅ handleRightClick method available', 'color: #00ff00;');
+                        
+                        if (window.app.selectionManager.contextMenu || document.getElementById('object-context-menu')) {
+                            console.log('%c✅ Context menu available', 'color: #00ff00;');
+                            console.log('%c🎉 All components ready for right-click context menu!', 'color: #00ffaa; font-weight: bold; font-size: 16px;');
+                            
+                            // Test context menu creation
+                            if (window.app.selectionManager.contextMenu) {
+                                console.log('%c✅ Context menu DOM element created by SelectionManager', 'color: #00ff00;');
+                            } else if (document.getElementById('object-context-menu')) {
+                                console.log('%c✅ Context menu DOM element found in HTML', 'color: #00ff00;');
+                            }
+                        } else {
+                            console.log('%c❌ Context menu not found', 'color: #ff0000;');
+                        }
+                    } else {
+                        console.log('%c❌ handleRightClick method not found', 'color: #ff0000;');
+                    }
+                } else {
+                    console.log('%c❌ SelectionManager not found', 'color: #ff0000;');
+                }            } else {
+                console.log('%c❌ App not initialized', 'color: #ff0000;');
+            }        }, 3000);
+    </script>
+    
+    <!-- Dialogue de sélection de motifs de hachures -->
+    <div id="hatch-pattern-dialog" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Choisir un motif de hachures</h3>
+                <span class="close" onclick="document.getElementById('hatch-pattern-dialog').style.display='none'">&times;</span>
+            </div>
+            <div class="modal-body">                <div class="pattern-grid">
+                    <!-- Motifs de base -->
+                    <div class="pattern-item" data-pattern="parallel">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-parallel"></canvas>
+                        <span>Parallèle</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="cross">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-cross"></canvas>
+                        <span>Croisé</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="diagonal">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-diagonal"></canvas>
+                        <span>Diagonal</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="dots">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-dots"></canvas>
+                        <span>Points</span>
+                    </div>
+                    
+                    <!-- Matériaux de construction -->
+                    <div class="pattern-item" data-pattern="concrete">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-concrete"></canvas>
+                        <span>Béton</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="concrete-block">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-concrete-block"></canvas>
+                        <span>Bloc béton</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="clay-block">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-clay-block"></canvas>
+                        <span>Terre cuite</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="cellular-concrete">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-cellular-concrete"></canvas>
+                        <span>Béton cellulaire</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="brick">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-brick"></canvas>
+                        <span>Brique</span>
+                    </div>
+                    
+                    <!-- Matériaux naturels -->
+                    <div class="pattern-item" data-pattern="stone">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-stone"></canvas>
+                        <span>Pierre</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="gravel">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-gravel"></canvas>
+                        <span>Graviers</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="sand">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-sand"></canvas>
+                        <span>Sable</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="earth">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-earth"></canvas>
+                        <span>Terre</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="grass">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-grass"></canvas>
+                        <span>Herbe</span>
+                    </div>
+                    
+                    <!-- Bois -->
+                    <div class="pattern-item" data-pattern="wood-cross">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-wood-cross"></canvas>
+                        <span>Bois coupe</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="wood-longitudinal">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-wood-longitudinal"></canvas>
+                        <span>Bois long.</span>
+                    </div>
+                    
+                    <!-- Isolants -->
+                    <div class="pattern-item" data-pattern="insulation-soft">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-insulation-soft"></canvas>
+                        <span>Isolant souple</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="insulation-rigid">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-insulation-rigid"></canvas>
+                        <span>Isolant rigide</span>
+                    </div>
+                    
+                    <!-- Métaux et matériaux industriels -->
+                    <div class="pattern-item" data-pattern="steel">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-steel"></canvas>
+                        <span>Acier</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="copper">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-copper"></canvas>
+                        <span>Cuivre</span>
+                    </div>
+                    
+                    <!-- Couverture -->
+                    <div class="pattern-item" data-pattern="tile-flat">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-tile-flat"></canvas>
+                        <span>Tuiles plates</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="tile-wave">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-tile-wave"></canvas>
+                        <span>Tuiles ondulées</span>
+                    </div>
+                    
+                    <!-- Autres matériaux -->
+                    <div class="pattern-item" data-pattern="glass">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-glass"></canvas>
+                        <span>Verre</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="water">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-water"></canvas>
+                        <span>Eau</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="zigzag">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-zigzag"></canvas>
+                        <span>Zigzag</span>
+                    </div>
+                    
+                    <!-- Surfaces pleines -->
+                    <div class="pattern-item" data-pattern="solid-black">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-solid-black"></canvas>
+                        <span>Noir</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="solid-gray">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-solid-gray"></canvas>
+                        <span>Gris</span>
+                    </div>
+                    <div class="pattern-item" data-pattern="solid-white">
+                        <canvas width="60" height="60" class="pattern-preview" id="preview-solid-white"></canvas>
+                        <span>Blanc</span>
+                    </div>
+                </div>
+                
+                <div class="pattern-controls">
+                    <div class="control-group">
+                        <label for="hatch-spacing">Espacement (cm):</label>
+                        <input type="range" id="hatch-spacing" min="0.1" max="10" step="0.1" value="2">
+                        <span id="spacing-value">2.0</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="hatch-angle">Angle (°):</label>
+                        <input type="range" id="hatch-angle" min="0" max="180" step="5" value="45">
+                        <span id="angle-value">45</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="hatch-color">Couleur:</label>
+                        <input type="color" id="hatch-color" value="#000000">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('hatch-pattern-dialog').style.display='none'">Annuler</button>
+                <button class="btn btn-primary" id="apply-hatch-pattern">Appliquer</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // Synchronize menu 'Importer GLB' with toolbar button
+window.addEventListener('DOMContentLoaded', () => {
+    const menuImportGLB = document.getElementById('import-glb');
+    const toolbarImportGLB = document.getElementById('toolbar-import-glb');
+    if (menuImportGLB && toolbarImportGLB) {
+        menuImportGLB.addEventListener('click', (e) => {
+            e.preventDefault();
+            toolbarImportGLB.click();
+        });
+    }
+});
+    </script>
+</body>
+</html>
