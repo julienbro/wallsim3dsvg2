@@ -1221,8 +1221,7 @@ export class UIManager {    constructor(app) {        this.app = app;
             
             layersList.appendChild(layerItem);
         });
-    }
-      setupDpad() {
+    }      setupDpad() {
         const dpadContainer = document.getElementById('dpad-container');
         if (!dpadContainer) {
             return;
@@ -1245,12 +1244,50 @@ export class UIManager {    constructor(app) {        this.app = app;
             this.moveSelectedObject(dx * getStepSize(), dy * getStepSize(), dz * getStepSize());
         };
 
+        // Configuration des boutons du dpad
         setupButton('dpad-up', () => handleMove(0, 1, 0));    // Y+
         setupButton('dpad-down', () => handleMove(0, -1, 0));  // Y-
         setupButton('dpad-left', () => handleMove(-1, 0, 0));  // X-
         setupButton('dpad-right', () => handleMove(1, 0, 0));   // X+
         setupButton('dpad-z-up', () => handleMove(0, 0, 1));    // Z+
         setupButton('dpad-z-down', () => handleMove(0, 0, -1));  // Z-
+
+        // Gestion des événements clavier pour le dpad
+        document.addEventListener('keydown', (event) => {
+            // Ignorer si l'utilisateur tape dans un champ de saisie
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            switch(event.key) {
+                case 'ArrowUp':
+                    event.preventDefault();
+                    handleMove(0, 1, 0); // Y+
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    handleMove(0, -1, 0); // Y-
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    handleMove(-1, 0, 0); // X-
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    handleMove(1, 0, 0); // X+
+                    break;
+                case '+':
+                case '=':
+                    event.preventDefault();
+                    handleMove(0, 0, 1); // Z+
+                    break;
+                case '-':
+                case '_':
+                    event.preventDefault();
+                    handleMove(0, 0, -1); // Z-
+                    break;
+            }
+        });
 
         setupButton('dpad-center', () => {
             if (this.app.selectedObject) {
